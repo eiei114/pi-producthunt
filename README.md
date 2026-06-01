@@ -1,88 +1,133 @@
-# PACKAGE_DISPLAY_NAME
+# Pi Product Hunt
 
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
-[![Publish](https://github.com/OWNER/REPO/actions/workflows/publish.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/publish.yml)
-[![npm version](https://img.shields.io/npm/v/PACKAGE_NAME.svg)](https://www.npmjs.com/package/PACKAGE_NAME)
-[![npm downloads](https://img.shields.io/npm/dm/PACKAGE_NAME.svg)](https://www.npmjs.com/package/PACKAGE_NAME)
+[![CI](https://github.com/eiei114/pi-producthunt/actions/workflows/ci.yml/badge.svg)](https://github.com/eiei114/pi-producthunt/actions/workflows/ci.yml)
+[![Publish](https://github.com/eiei114/pi-producthunt/actions/workflows/publish.yml/badge.svg)](https://github.com/eiei114/pi-producthunt/actions/workflows/publish.yml)
+[![npm version](https://img.shields.io/npm/v/pi-producthunt.svg)](https://www.npmjs.com/package/pi-producthunt)
+[![npm downloads](https://img.shields.io/npm/dm/pi-producthunt.svg)](https://www.npmjs.com/package/pi-producthunt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Pi package](https://img.shields.io/badge/pi-package-purple.svg)](https://pi.dev/packages)
-[![Trusted Publishing](https://img.shields.io/badge/npm-Trusted%20Publishing-blue.svg)](docs/release.md)
 
-> One-line pitch for this TypeScript-first Pi package.
+> Product Hunt research and digest workflows inside Pi.
 
-## What this is
-
-Briefly explain what this TypeScript-first package adds to Pi and who should use it.
+Pi Product Hunt is a read-only Pi extension package for Product Hunt market research. It calls the Product Hunt GraphQL API directly, adds interactive `/producthunt:*` commands for humans, and exposes structured tools for agents to gather launches, post details, comments, and digest-ready research notes.
 
 ## Features
 
-- Feature 1
-- Feature 2
-- Feature 3
+- Daily Product Hunt launch scans.
+- Product/post search for competitor and trend research.
+- Post detail and comment collection for user-reaction analysis.
+- Digest-ready Markdown with sections for signals, reactions, and watchlists.
+- Persistent login that stores your Product Hunt token in the Pi agent directory.
+- Agent tools with typed parameters for autonomous Product Hunt research.
 
 ## Install
 
-Install the published npm package with Pi:
-
 ```bash
-pi install npm:PACKAGE_NAME
-```
-
-Replace `PACKAGE_NAME` with the exact `name` from `package.json`.
-For a scoped npm package, keep the `npm:` prefix:
-
-```bash
-pi install npm:@your-scope/your-pi-package
-```
-
-Pin a specific version when you want reproducible installs:
-
-```bash
-pi install npm:PACKAGE_NAME@0.1.0
-```
-
-Install into the current project instead of your user Pi settings:
-
-```bash
-pi install npm:PACKAGE_NAME -l
+pi install npm:pi-producthunt
 ```
 
 Or install from GitHub:
 
 ```bash
-pi install git:github.com/OWNER/REPO
+pi install git:github.com/eiei114/pi-producthunt
 ```
 
-Try it without permanently installing:
+Try without installing permanently:
 
 ```bash
-pi -e npm:PACKAGE_NAME
+pi -e npm:pi-producthunt
 ```
 
-## Quick start
-
-Try this package locally:
+For local development from a checkout:
 
 ```bash
 pi -e .
 ```
 
-Then run:
+## Authentication
+
+Use the interactive login command:
 
 ```txt
-/your-command
+/producthunt:login
+```
+
+This stores your token in:
+
+```txt
+~/.pi/agent/pi-producthunt-auth.json
+```
+
+You can remove the stored token with:
+
+```txt
+/producthunt:logout
+```
+
+You can also provide a token through the environment. Environment auth takes priority over the stored login token:
+
+```bash
+export PRODUCTHUNT_ACCESS_TOKEN=...
+```
+
+## Commands
+
+Commands are human-facing and require no fixed inline arguments. If input is needed, Pi asks interactively.
+
+```txt
+/producthunt:status
+/producthunt:login
+/producthunt:logout
+/producthunt:today
+/producthunt:search
+/producthunt:post
+/producthunt:comments
+/producthunt:digest
+/producthunt:research
+```
+
+Example flows:
+
+```txt
+/producthunt:today      # today's launch list
+/producthunt:search     # asks for a search query
+/producthunt:post       # asks for slug, ID, or URL
+/producthunt:comments   # asks for slug, ID, or URL
+/producthunt:digest     # asks for today / yesterday / custom date
+/producthunt:research   # asks for a research topic
+```
+
+## Agent tools
+
+Agents can call these typed tools directly:
+
+```txt
+producthunt_status
+producthunt_get_posts
+producthunt_search_posts
+producthunt_get_post
+producthunt_get_post_comments
+producthunt_research_topic
+producthunt_digest
+```
+
+Examples:
+
+```txt
+producthunt_search_posts({ query: "AI coding agent", limit: 10 })
+producthunt_get_post({ ref: "example-product-slug" })
+producthunt_get_post_comments({ ref: "example-product-slug", limit: 10 })
+producthunt_digest({ date: "2026-06-01", limit: 10 })
 ```
 
 ## Package contents
 
 | Path | Purpose |
 |---|---|
-| `extensions/` | Pi TypeScript extension entrypoints (`*.ts` and `index.ts`) |
-| `lib/` | Shared TypeScript helpers |
-| `skills/` | Agent Skills |
-| `prompts/` | Prompt templates |
-| `themes/` | Pi themes |
-| `docs/` | Release and setup docs |
+| `extensions/` | Pi extension entrypoint and command/tool registration |
+| `lib/` | Product Hunt API client, auth store, formatters, schemas, helpers |
+| `docs/` | Release and package setup docs |
+| `tests/` | Node test suite |
 
 ## Development
 
@@ -91,59 +136,36 @@ npm install
 npm run ci
 ```
 
-## Development flow
+`npm run ci` runs:
 
-Use this default flow when building a new Pi extension OSS project from this template:
-
-1. Create the Vault project notes under `4_Project/<ProjectName>/`.
-2. Add `CONTEXT.md`, `README.md`, `ROADMAP.md`, `Docs/`, `Issues/`, and `Progress/`.
-3. Write the PRD in `4_Project/<ProjectName>/Docs/`.
-4. Split approved tracer-bullet issues into `4_Project/<ProjectName>/Issues/`.
-5. Implement in the OSS repo.
-6. Run `npm run ci`, `npm test`, and `npm pack --dry-run`.
-7. Release with Trusted Publishing.
-8. Save release notes and follow-up decisions back to the Vault project.
-
-Short version:
-
-```txt
-Vault notes -> PRD -> Issues -> implement -> ci/check -> release -> save learnings
-```
+- TypeScript typecheck
+- Node tests
+- `npm pack --dry-run`
 
 ## Release
 
-This package is set up for npm Trusted Publishing, so no `NPM_TOKEN` is required.
+This package supports npm Trusted Publishing, but you can also publish manually when needed:
 
 ```bash
-npm version patch
-git push
+npm publish --access public --otp <OTP>
 ```
 
-See [`docs/release.md`](docs/release.md) for setup details.
-
-## Template checklist
-
-After creating a repository from this template, follow [`docs/template-checklist.md`](docs/template-checklist.md).
-
-More docs:
-
-- [`docs/typescript.md`](docs/typescript.md)
-- [`docs/examples.md`](docs/examples.md)
-- [`docs/github-template.md`](docs/github-template.md)
-- [`docs/repository-settings.md`](docs/repository-settings.md)
+Do not store long-lived npm tokens in this repo.
 
 ## Security
 
-Pi packages can execute code with your local permissions. Review extensions before installing third-party packages.
+Pi packages execute with your local permissions. Review source before installing third-party packages.
+
+Product Hunt tokens are never committed by this package. `/producthunt:login` stores the token locally in `~/.pi/agent/pi-producthunt-auth.json`; `/producthunt:logout` deletes that stored file. `PRODUCTHUNT_ACCESS_TOKEN` is never modified by logout.
 
 For vulnerability reporting, see [`SECURITY.md`](SECURITY.md).
 
 ## Links
 
-- npm: https://www.npmjs.com/package/PACKAGE_NAME
-- GitHub: https://github.com/OWNER/REPO
-- Issues: https://github.com/OWNER/REPO/issues
+- npm: https://www.npmjs.com/package/pi-producthunt
+- GitHub: https://github.com/eiei114/pi-producthunt
+- Issues: https://github.com/eiei114/pi-producthunt/issues
 
 ## License
 
-MIT\n
+MIT

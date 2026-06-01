@@ -1,30 +1,30 @@
 {
-  "name": "pi-extension-template",
+  "name": "pi-producthunt",
   "version": "0.1.1",
-  "description": "Template for building Pi packages with extensions, Agent Skills, prompts, and themes.",
+  "description": "Pi extension package for Product Hunt research and digest workflows.",
   "type": "module",
   "license": "MIT",
-  "author": "YOUR_NAME",
+  "author": "eiei114",
   "keywords": [
     "pi-package",
     "pi",
+    "producthunt",
+    "research",
+    "digest",
     "agent-skill",
     "typescript"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OWNER/REPO.git"
+    "url": "git+https://github.com/eiei114/pi-producthunt.git"
   },
   "bugs": {
-    "url": "https://github.com/OWNER/REPO/issues"
+    "url": "https://github.com/eiei114/pi-producthunt/issues"
   },
-  "homepage": "https://github.com/OWNER/REPO#readme",
+  "homepage": "https://github.com/eiei114/pi-producthunt#readme",
   "files": [
     "extensions/",
     "lib/",
-    "skills/",
-    "prompts/",
-    "themes/",
     "docs/",
     "README.md",
     "LICENSE",
@@ -39,15 +39,6 @@
   "pi": {
     "extensions": [
       "./extensions"
-    ],
-    "skills": [
-      "./skills"
-    ],
-    "prompts": [
-      "./prompts"
-    ],
-    "themes": [
-      "./themes"
     ]
   },
   "publishConfig": {
