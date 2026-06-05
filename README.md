@@ -126,7 +126,7 @@ producthunt_digest({ date: "2026-06-01", limit: 10 })
 |---|---|
 | `extensions/` | Pi extension entrypoint and command/tool registration |
 | `lib/` | Product Hunt API client, auth store, formatters, schemas, helpers |
-| `docs/` | Release and package setup docs |
+| `docs/` | Release notes and usage examples |
 | `tests/` | Node test suite |
 
 ## Development
