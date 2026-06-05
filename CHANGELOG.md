@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
+## [0.1.2] - 2026-06-05
+
+### Changed
+
+- Removed stale template scaffolding docs from the published package.
+
 ## [0.1.1] - 2026-06-01
 
 ### Changed
