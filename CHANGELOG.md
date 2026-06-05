@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
+## [0.1.3] - 2026-06-05
+
+### Changed
+
+- Patch bump to verify npm publish workflow.
+
 ## [0.1.2] - 2026-06-05
 
 ### Changed
