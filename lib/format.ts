@@ -96,8 +96,9 @@ function getInlineComments(post: PostListItem | (PostListItem & { comments?: Com
 export function formatResearch(result: ResearchTopicResult): string {
   const lines = [`# Product Hunt Research: ${result.query}`, ""];
   if (!result.posts.length) {
-    lines.push("No matching posts found in the current ranking pool.");
-    return lines.join("\n");
+    lines.push("No matching posts found in the current ranking pool.", "");
+    lines.push(formatWatchlistSection([], result.query));
+    return truncateMarkdown(lines.join("\n"));
   }
 
   result.posts.forEach((post, index) => {

@@ -53,6 +53,7 @@ test("formatTopicWatchlist formats multiple ranked entries", () => {
         ...basePost,
         slug: "runner-up",
         name: "Runner Up",
+        url: "https://www.producthunt.com/posts/runner-up",
         votesCount: 20,
         commentsCount: 2,
       },
@@ -74,6 +75,7 @@ test("deriveWatchlistEntries caps output to five entries", () => {
     id: String(index + 1),
     slug: `tool-${index + 1}`,
     name: `Tool ${index + 1}`,
+    url: `https://www.producthunt.com/posts/tool-${index + 1}`,
     votesCount: index + 1,
   }));
 

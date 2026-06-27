@@ -36,9 +36,9 @@ function scorePost(post: ScoredPost): number {
 function commentSignalWeight(comment: CommentSummary): number {
   const text = stripHtml(comment.body).toLowerCase();
   if (!text) return 0;
-  if (/(pricing|price|cost|subscription|plan)/.test(text)) return 4;
-  if (/(love|great|awesome|interested|need this|useful)/.test(text)) return 2;
-  if (/(question|how|when|support)/.test(text)) return 1;
+  if (/\b(pricing|price|cost|subscription|plan)s?\b/.test(text)) return 4;
+  if (/\b(love|great|awesome|interested|need this|useful)\b/.test(text)) return 2;
+  if (/\b(question|how|when|support)\b|\?/.test(text)) return 1;
   return 0;
 }
 
@@ -63,13 +63,13 @@ function summarizeCommentSignals(comments: CommentSummary[]): string {
   const bodies = comments.map((comment) => stripHtml(comment.body).toLowerCase()).filter(Boolean);
   if (!bodies.length) return "";
 
-  if (bodies.some((body) => /(pricing|price|cost|subscription|plan)/.test(body))) {
+  if (bodies.some((body) => /\b(pricing|price|cost|subscription|plan)s?\b/.test(body))) {
     return "commenters ask about pricing";
   }
-  if (bodies.some((body) => /(love|great|awesome|interested|need this|useful)/.test(body))) {
+  if (bodies.some((body) => /\b(love|great|awesome|interested|need this|useful)\b/.test(body))) {
     return "positive launch reactions in comments";
   }
-  if (bodies.some((body) => /(question|how|when|support)/.test(body))) {
+  if (bodies.some((body) => /\b(question|how|when|support)\b|\?/.test(body))) {
     return "active questions in the thread";
   }
   return "comment thread worth sampling";

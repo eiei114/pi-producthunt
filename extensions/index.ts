@@ -3,6 +3,7 @@ import { Type } from "typebox";
 import { getPost, getPostComments, getPosts, getViewer, researchTopic, searchPosts } from "../lib/client.ts";
 import { PRODUCTHUNT_TOKEN_ENV, authStatusText, clearStoredAccessToken, saveStoredAccessToken } from "../lib/config.ts";
 import { formatComments, formatDigest, formatPostDetails, formatPostList, formatResearch, formatStatus, formatTopicWatchlist } from "../lib/format.ts";
+import { deriveWatchlistEntries } from "../lib/watchlist.ts";
 import { todayIsoDate, yesterdayIsoDate } from "../lib/identity.ts";
 import { StringEnum } from "../lib/schema.ts";
 import type { ResearchTopicResult } from "../lib/types.ts";
@@ -143,7 +144,7 @@ function registerTools(pi: ExtensionAPI) {
     parameters: researchParameters,
     async execute(_toolCallId, params, signal) {
       const result = await researchTopic(params, { signal });
-      return { content: [{ type: "text", text: formatTopicWatchlist(result) }], details: { query: result.query, watchlist: result } };
+      return { content: [{ type: "text", text: formatTopicWatchlist(result) }], details: { query: result.query, watchlist: deriveWatchlistEntries(result) } };
     },
   });
 
