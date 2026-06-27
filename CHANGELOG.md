@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
+## [0.1.4] - 2026-06-27
+
+### Changed
+
+- Aligned README structure with the current Pi extension template while preserving Product Hunt authentication, commands, and agent tool documentation.
+
 ## [0.1.3] - 2026-06-05
 
 ### Changed

@@ -6,8 +6,11 @@
 [![npm downloads](https://img.shields.io/npm/dm/pi-producthunt.svg)](https://www.npmjs.com/package/pi-producthunt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Pi package](https://img.shields.io/badge/pi-package-purple.svg)](https://pi.dev/packages)
+[![Trusted Publishing](https://img.shields.io/badge/npm-Trusted%20Publishing-blue.svg)](docs/release.md)
 
 > Product Hunt research and digest workflows inside Pi.
+
+## What this is
 
 Pi Product Hunt is a read-only Pi extension package for Product Hunt market research. It calls the Product Hunt GraphQL API directly, adds interactive `/producthunt:*` commands for humans, and exposes structured tools for agents to gather launches, post details, comments, and digest-ready research notes.
 
@@ -22,8 +25,22 @@ Pi Product Hunt is a read-only Pi extension package for Product Hunt market rese
 
 ## Install
 
+Install the published npm package with Pi:
+
 ```bash
 pi install npm:pi-producthunt
+```
+
+Pin a specific version when you want reproducible installs:
+
+```bash
+pi install npm:pi-producthunt@0.1.4
+```
+
+Install into the current project instead of your user Pi settings:
+
+```bash
+pi install npm:pi-producthunt -l
 ```
 
 Or install from GitHub:
@@ -42,6 +59,39 @@ For local development from a checkout:
 
 ```bash
 pi -e .
+```
+
+## Quick start
+
+1. Install the package:
+
+```bash
+pi install npm:pi-producthunt
+```
+
+2. Authenticate with Product Hunt:
+
+```txt
+/producthunt:login
+```
+
+3. Fetch today's launches:
+
+```txt
+/producthunt:today
+```
+
+Or search for a topic:
+
+```txt
+/producthunt:search
+```
+
+Agents can fetch Product Hunt data directly with typed tools:
+
+```txt
+producthunt_get_posts({ limit: 5 })
+producthunt_search_posts({ query: "AI coding agent", limit: 10 })
 ```
 
 ## Authentication
@@ -127,7 +177,6 @@ producthunt_digest({ date: "2026-06-01", limit: 10 })
 | `extensions/` | Pi extension entrypoint and command/tool registration |
 | `lib/` | Product Hunt API client, auth store, formatters, schemas, helpers |
 | `docs/` | Release notes and usage examples |
-| `tests/` | Node test suite |
 
 ## Development
 
@@ -144,13 +193,14 @@ npm run ci
 
 ## Release
 
-This package supports npm Trusted Publishing, but you can also publish manually when needed:
+This package is set up for npm Trusted Publishing, so no `NPM_TOKEN` is required.
 
 ```bash
-npm publish --access public --otp <OTP>
+npm version patch
+git push
 ```
 
-Do not store long-lived npm tokens in this repo.
+See [`docs/release.md`](docs/release.md) for setup details.
 
 ## Security
 
