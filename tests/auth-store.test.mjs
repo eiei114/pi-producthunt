@@ -35,3 +35,13 @@ test("clearStoredAccessToken removes stored token", async () => {
   });
 });
 
+
+test("inspectStoredAccessToken reports invalid JSON as unreadable", async () => {
+  await withStore(async ({ getAuthFilePath, inspectStoredAccessToken }) => {
+    const { writeFile } = await import("node:fs/promises");
+    await writeFile(getAuthFilePath(), "{bad", "utf-8");
+    const inspection = inspectStoredAccessToken();
+    assert.equal(inspection.loadable, false);
+    assert.equal(inspection.issue, "unreadable");
+  });
+});

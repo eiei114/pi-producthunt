@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
+## [0.2.0] - 2026-06-28
+
+### Added
+
+- Auth diagnostics for `/producthunt:status` and `producthunt_status` report active token source (environment vs stored login).
+- Actionable recovery guidance for missing tokens, unreadable auth files, invalid stored tokens, and API validation failures.
+- Tests for env, stored, missing, unreadable, and invalid token scenarios.
+
+### Changed
+
+- `inspectStoredAccessToken()` distinguishes missing, unreadable, and invalid stored login files.
+
 ## [0.1.4] - 2026-06-27
 
 ### Changed

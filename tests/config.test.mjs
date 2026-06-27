@@ -4,7 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-const { authStatusText, getProductHuntToken, redactProductHuntToken } = await import("../lib/config.ts");
+const { getProductHuntToken, redactProductHuntToken } = await import("../lib/config.ts");
+const { authStatusText } = await import("../lib/auth-diagnostics.ts");
 
 test("getProductHuntToken reads env token", () => {
   assert.equal(getProductHuntToken({ PRODUCTHUNT_ACCESS_TOKEN: " token " }), "token");
@@ -55,7 +56,7 @@ test("authStatusText hides secrets", () => {
   process.env.PRODUCTHUNT_ACCESS_TOKEN = "secret-token";
   try {
     const status = authStatusText();
-    assert.match(status, /environment variable/);
+    assert.match(status, /environment/);
     assert.equal(status.includes("secret-token"), false);
   } finally {
     if (previous === undefined) delete process.env.PRODUCTHUNT_ACCESS_TOKEN;

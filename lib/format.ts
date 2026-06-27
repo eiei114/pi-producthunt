@@ -1,6 +1,52 @@
+import type { AuthValidationResult, ProductHuntAuthDiagnostics } from "./auth-diagnostics.ts";
 import type { CommentSummary, PostCommentsResult, PostConnectionResult, PostDetails, PostListItem, ResearchTopicResult, ViewerResult } from "./types.ts";
 
 const DEFAULT_MAX_CHARS = 16_000;
+
+export function formatAuthStatusReport(
+  diagnostics: ProductHuntAuthDiagnostics,
+  validation: AuthValidationResult,
+): string {
+  const lines = ["# Product Hunt Authentication", ""];
+
+  lines.push("## Token source");
+  if (diagnostics.activeSource === "environment") {
+    lines.push("- Active source: environment variable (PRODUCTHUNT_ACCESS_TOKEN)");
+  } else if (diagnostics.activeSource === "stored") {
+    lines.push("- Active source: stored login (/producthunt:login)");
+  } else {
+    lines.push("- Active source: none");
+  }
+
+  lines.push(`- Stored login file: ${diagnostics.storedLoginPresent ? "present" : "absent"} (${diagnostics.authFilePath})`);
+  if (diagnostics.storedLoginShadowed) {
+    lines.push("- Note: stored login exists but environment token takes precedence.");
+  }
+  lines.push(`- Precedence: ${diagnostics.precedence}`);
+
+  lines.push("", "## API validation");
+  if (validation.ok) {
+    const viewer = validation.username
+      ? `@${validation.username}`
+      : "token accepted; no viewer username returned for this token scope";
+    lines.push(`- Status: OK - ${viewer}`);
+    const rateLimit = formatRateLimit(validation.rateLimit);
+    if (rateLimit) lines.push(rateLimit.trim());
+  } else if (validation.failure) {
+    lines.push(`- Status: failed (${validation.failure.code})`);
+    lines.push(`- Reason: ${validation.failure.message}`);
+    lines.push("", "## Recovery");
+    validation.failure.recovery.forEach((step) => lines.push(`- ${step}`));
+  } else if (diagnostics.failure) {
+    lines.push(`- Status: not attempted (${diagnostics.failure.code})`);
+    lines.push(`- Reason: ${diagnostics.failure.message}`);
+    lines.push("", "## Recovery");
+    diagnostics.failure.recovery.forEach((step) => lines.push(`- ${step}`));
+  }
+
+  return truncateMarkdown(lines.join(String.fromCharCode(10)));
+}
+
 
 export function formatStatus(result: ViewerResult): string {
   const viewer = result.username ? `@${result.username}` : "token valid; no viewer returned for this token scope";
