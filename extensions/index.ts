@@ -3,7 +3,8 @@ import { Type } from "typebox";
 import { getPost, getPostComments, getPosts, researchTopic, searchPosts } from "../lib/client.ts";
 import { getProductHuntAuthDiagnostics, validateProductHuntAccess } from "../lib/auth-diagnostics.ts";
 import { PRODUCTHUNT_TOKEN_ENV, clearStoredAccessToken, saveStoredAccessToken } from "../lib/config.ts";
-import { formatAuthStatusReport, formatComments, formatDigest, formatPostDetails, formatPostList, formatResearch } from "../lib/format.ts";
+import { formatAuthStatusReport, formatComments, formatDigest, formatPostDetails, formatPostList, formatResearch, formatTopicWatchlist } from "../lib/format.ts";
+import { deriveWatchlistEntries } from "../lib/watchlist.ts";
 import { todayIsoDate, yesterdayIsoDate } from "../lib/identity.ts";
 import { StringEnum } from "../lib/schema.ts";
 import type { ResearchTopicResult } from "../lib/types.ts";
@@ -138,6 +139,22 @@ function registerTools(pi: ExtensionAPI) {
   });
 
   pi.registerTool({
+    name: "producthunt_topic_watchlist",
+    label: "Product Hunt Topic Watchlist",
+    description: "Create a compact watchlist of promising Product Hunt products for a research topic",
+    promptSnippet: "producthunt_topic_watchlist: shortlist promising Product Hunt launches to revisit",
+    promptGuidelines: [
+      "Use producthunt_topic_watchlist when the user wants a short revisit list instead of a full research dump.",
+      "Prefer producthunt_research_topic when the user needs comment signals and synthesis prompts.",
+    ],
+    parameters: researchParameters,
+    async execute(_toolCallId, params, signal) {
+      const result = await researchTopic(params, { signal });
+      return { content: [{ type: "text", text: formatTopicWatchlist(result) }], details: { query: result.query, watchlist: deriveWatchlistEntries(result) } };
+    },
+  });
+
+  pi.registerTool({
     name: "producthunt_digest",
     label: "Product Hunt Digest",
     description: "Create digest-ready Markdown for Product Hunt launches on a date",
@@ -234,6 +251,15 @@ function registerCommands(pi: ExtensionAPI) {
       runCommand(pi, ctx, "digest", async () => {
         const date = await chooseDate(ctx);
         return formatDigest(date, await buildDigest(date, 10, 3, ctx.signal));
+      }),
+  });
+
+  pi.registerCommand("producthunt:watchlist", {
+    description: "Interactively create a compact Product Hunt topic watchlist",
+    handler: async (_args, ctx) =>
+      runCommand(pi, ctx, "watchlist", async () => {
+        const query = await requiredInput(ctx, "Product Hunt watchlist", "Research topic or keyword");
+        return formatTopicWatchlist(await researchTopic({ query, limit: 5, commentsPerPost: 3 }, { signal: ctx.signal }));
       }),
   });
 

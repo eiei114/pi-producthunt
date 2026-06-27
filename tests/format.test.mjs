@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-const { formatComments, formatDigest, formatPostList, formatResearch } = await import("../lib/format.ts");
+const { formatComments, formatDigest, formatPostList, formatResearch, formatTopicWatchlist } = await import("../lib/format.ts");
 
 const post = {
   id: "1",
@@ -33,14 +33,18 @@ test("formatComments strips html", () => {
   assert.match(markdown, /Great\ntool & launch/);
 });
 
-test("formatDigest includes digest scaffold", () => {
-  const markdown = formatDigest("2026-06-01", { posts: [post] });
+test("formatDigest includes populated watchlist section", () => {
+  const markdown = formatDigest("2026-06-01", {
+    query: "2026-06-01",
+    posts: [{ ...post, comments: [{ id: "c1", body: "Love this", user: { name: "User" } }] }],
+  });
   assert.match(markdown, /Product Hunt Digest 2026-06-01/);
   assert.match(markdown, /## Signals/);
-  assert.match(markdown, /## Watchlist/);
+  assert.match(markdown, /## Topic watchlist/);
+  assert.match(markdown, /why promising:/);
 });
 
-test("formatResearch includes comment signals", () => {
+test("formatResearch includes topic watchlist section", () => {
   const markdown = formatResearch({
     query: "AI",
     posts: [{ ...post, comments: [{ id: "c1", body: "I need pricing", user: { name: "User" } }] }],
@@ -48,5 +52,11 @@ test("formatResearch includes comment signals", () => {
   assert.match(markdown, /Product Hunt Research: AI/);
   assert.match(markdown, /Comment signals/);
   assert.match(markdown, /I need pricing/);
+  assert.match(markdown, /## Topic watchlist: AI/);
 });
 
+test("formatTopicWatchlist stays compact", () => {
+  const markdown = formatTopicWatchlist({ query: "AI", posts: [post] });
+  assert.ok(markdown.length < 600);
+  assert.doesNotMatch(markdown, /Comment signals/);
+});

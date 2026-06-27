@@ -19,7 +19,8 @@ Pi Product Hunt is a read-only Pi extension package for Product Hunt market rese
 - Daily Product Hunt launch scans.
 - Product/post search for competitor and trend research.
 - Post detail and comment collection for user-reaction analysis.
-- Digest-ready Markdown with sections for signals, reactions, and watchlists.
+- Digest-ready Markdown with sections for signals, reactions, and topic watchlists.
+- Compact topic watchlists with bounded rationale for products worth revisiting.
 - Persistent login that stores your Product Hunt token in the Pi agent directory.
 - Agent tools with typed parameters for autonomous Product Hunt research.
 
@@ -152,6 +153,7 @@ Commands are human-facing and require no fixed inline arguments. If input is nee
 /producthunt:comments
 /producthunt:digest
 /producthunt:research
+/producthunt:watchlist
 ```
 
 Example flows:
@@ -163,6 +165,7 @@ Example flows:
 /producthunt:comments   # asks for slug, ID, or URL
 /producthunt:digest     # asks for today / yesterday / custom date
 /producthunt:research   # asks for a research topic
+/producthunt:watchlist  # asks for a topic and returns a compact revisit list
 ```
 
 ## Agent tools
@@ -176,6 +179,7 @@ producthunt_search_posts
 producthunt_get_post
 producthunt_get_post_comments
 producthunt_research_topic
+producthunt_topic_watchlist
 producthunt_digest
 ```
 
@@ -186,7 +190,10 @@ producthunt_search_posts({ query: "AI coding agent", limit: 10 })
 producthunt_get_post({ ref: "example-product-slug" })
 producthunt_get_post_comments({ ref: "example-product-slug", limit: 10 })
 producthunt_digest({ date: "2026-06-01", limit: 10 })
+producthunt_topic_watchlist({ query: "AI coding agent", limit: 5 })
 ```
+
+See [`docs/watchlist.md`](docs/watchlist.md) for when to use a watchlist vs a full digest or research pack.
 
 ## Package contents
 
@@ -194,7 +201,7 @@ producthunt_digest({ date: "2026-06-01", limit: 10 })
 |---|---|
 | `extensions/` | Pi extension entrypoint and command/tool registration |
 | `lib/` | Product Hunt API client, auth store, formatters, schemas, helpers |
-| `docs/` | Release notes and usage examples |
+| `docs/` | Release notes, usage examples, and watchlist guidance |
 
 ## Development
 
