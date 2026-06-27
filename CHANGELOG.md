@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
+## [0.2.0] - 2026-06-28
+
+### Added
+
+- Compact topic watchlist output with bounded rationale fields (`why promising`, `launch timing`, `next url`).
+- `producthunt_topic_watchlist` agent tool and `/producthunt:watchlist` command for revisit-only shortlists.
+- Watchlist derivation from topic research and digest workflows.
+- `docs/watchlist.md` explaining when to use watchlist vs full research or digest output.
+
 ## [0.1.4] - 2026-06-27
 
 ### Changed

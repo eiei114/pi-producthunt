@@ -72,6 +72,14 @@ export interface ResearchTopicResult {
   rateLimit?: RateLimitInfo;
 }
 
+export interface WatchlistEntry {
+  name: string;
+  slug: string;
+  whyPromising: string;
+  launchTiming: string;
+  nextUrl: string;
+}
+
 export interface ViewerResult {
   username?: string;
   rateLimit?: RateLimitInfo;

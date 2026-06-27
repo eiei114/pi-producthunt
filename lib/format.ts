@@ -1,4 +1,5 @@
-import type { CommentSummary, PostCommentsResult, PostConnectionResult, PostDetails, PostListItem, ResearchTopicResult, ViewerResult } from "./types.ts";
+import type { CommentSummary, PostCommentsResult, PostConnectionResult, PostDetails, PostListItem, ResearchTopicResult, ViewerResult, WatchlistEntry } from "./types.ts";
+import { deriveWatchlistEntries } from "./watchlist.ts";
 
 const DEFAULT_MAX_CHARS = 16_000;
 
@@ -83,7 +84,7 @@ export function formatDigest(date: string, result: ResearchTopicResult | PostCon
 
   lines.push("", "## Signals", "- AI:", "- DevTools:", "- Consumer:", "- Design:", "- Productivity:");
   lines.push("", "## User reactions", "- Praise:", "- Complaints:", "- Questions:", "- Pricing concerns:");
-  lines.push("", "## Watchlist", "- Product:", "  - reason:", "  - follow-up query:");
+  lines.push("", formatWatchlistSection(deriveWatchlistEntries({ query: date, posts })));
   return truncateMarkdown(lines.join("\n"));
 }
 
@@ -95,8 +96,9 @@ function getInlineComments(post: PostListItem | (PostListItem & { comments?: Com
 export function formatResearch(result: ResearchTopicResult): string {
   const lines = [`# Product Hunt Research: ${result.query}`, ""];
   if (!result.posts.length) {
-    lines.push("No matching posts found in the current ranking pool.");
-    return lines.join("\n");
+    lines.push("No matching posts found in the current ranking pool.", "");
+    lines.push(formatWatchlistSection([], result.query));
+    return truncateMarkdown(lines.join("\n"));
   }
 
   result.posts.forEach((post, index) => {
@@ -113,7 +115,30 @@ export function formatResearch(result: ResearchTopicResult): string {
   });
 
   lines.push("## Synthesis prompts", "- Shared positioning pattern:", "- Repeated complaint:", "- Underserved user:", "- Follow-up searches:");
+  lines.push("", formatWatchlistSection(deriveWatchlistEntries(result), result.query));
   return truncateMarkdown(lines.join("\n"));
+}
+
+export function formatTopicWatchlist(result: ResearchTopicResult, maxEntries?: number): string {
+  const entries = deriveWatchlistEntries(result, maxEntries);
+  return truncateMarkdown(formatWatchlistSection(entries, result.query));
+}
+
+export function formatWatchlistSection(entries: WatchlistEntry[], query?: string): string {
+  const lines = [query ? `## Topic watchlist: ${query}` : "## Topic watchlist", ""];
+  if (!entries.length) {
+    lines.push("No promising products to watch yet.");
+    return lines.join("\n");
+  }
+
+  entries.forEach((entry, index) => {
+    lines.push(`${index + 1}. ${entry.name} (${entry.slug})`);
+    lines.push(`   - why promising: ${entry.whyPromising}`);
+    lines.push(`   - launch timing: ${entry.launchTiming}`);
+    lines.push(`   - next url: ${entry.nextUrl}`);
+  });
+
+  return lines.join("\n");
 }
 
 export function truncateMarkdown(markdown: string, maxChars = DEFAULT_MAX_CHARS): string {
