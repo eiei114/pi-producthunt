@@ -1,8 +1,9 @@
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
-import { getPost, getPostComments, getPosts, getViewer, researchTopic, searchPosts } from "../lib/client.ts";
-import { PRODUCTHUNT_TOKEN_ENV, authStatusText, clearStoredAccessToken, saveStoredAccessToken } from "../lib/config.ts";
-import { formatComments, formatDigest, formatPostDetails, formatPostList, formatResearch, formatStatus, formatTopicWatchlist } from "../lib/format.ts";
+import { getPost, getPostComments, getPosts, researchTopic, searchPosts } from "../lib/client.ts";
+import { getProductHuntAuthDiagnostics, validateProductHuntAccess } from "../lib/auth-diagnostics.ts";
+import { PRODUCTHUNT_TOKEN_ENV, clearStoredAccessToken, saveStoredAccessToken } from "../lib/config.ts";
+import { formatAuthStatusReport, formatComments, formatDigest, formatPostDetails, formatPostList, formatResearch, formatTopicWatchlist } from "../lib/format.ts";
 import { deriveWatchlistEntries } from "../lib/watchlist.ts";
 import { todayIsoDate, yesterdayIsoDate } from "../lib/identity.ts";
 import { StringEnum } from "../lib/schema.ts";
@@ -57,13 +58,18 @@ function registerTools(pi: ExtensionAPI) {
   pi.registerTool({
     name: "producthunt_status",
     label: "Product Hunt Status",
-    description: "Check Product Hunt API authentication status using PRODUCTHUNT_ACCESS_TOKEN",
-    promptSnippet: "producthunt_status: check Product Hunt API authentication status",
+    description: "Check Product Hunt API authentication status, token source, and validation diagnostics",
+    promptSnippet: "producthunt_status: check Product Hunt auth source and API validation",
     promptGuidelines: ["Use producthunt_status before Product Hunt research when authentication may be missing or stale."],
     parameters: emptyParameters,
     async execute(_toolCallId, _params, signal) {
-      const result = await getViewer({ signal });
-      return { content: [{ type: "text", text: formatStatus(result) }], details: result };
+      const diagnostics = getProductHuntAuthDiagnostics();
+      const validation = await validateProductHuntAccess({ signal });
+      const report = formatAuthStatusReport(diagnostics, validation);
+      return {
+        content: [{ type: "text", text: report }],
+        details: { diagnostics, validation },
+      };
     },
   });
 
@@ -165,12 +171,12 @@ function registerTools(pi: ExtensionAPI) {
 
 function registerCommands(pi: ExtensionAPI) {
   pi.registerCommand("producthunt:status", {
-    description: "Check Product Hunt API authentication status",
+    description: "Check Product Hunt API authentication status, token source, and validation diagnostics",
     handler: async (_args, ctx) =>
       runCommand(pi, ctx, "status", async () => {
-        const auth = authStatusText();
-        const viewer = await getViewer({ signal: ctx.signal });
-        return `${auth}\n\n${formatStatus(viewer)}`;
+        const diagnostics = getProductHuntAuthDiagnostics();
+        const validation = await validateProductHuntAccess({ signal: ctx.signal });
+        return formatAuthStatusReport(diagnostics, validation);
       }),
   });
 

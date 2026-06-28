@@ -97,29 +97,47 @@ producthunt_search_posts({ query: "AI coding agent", limit: 10 })
 
 ## Authentication
 
+Product Hunt access comes from one of two sources:
+
+1. **Environment variable** `PRODUCTHUNT_ACCESS_TOKEN`
+2. **Stored login** written by `/producthunt:login` to `~/.pi/agent/pi-producthunt-auth.json`
+
+**Precedence:** when both are set, the environment variable wins. The stored login file is ignored until you unset the environment variable or start Pi without it.
+
 Use the interactive login command:
 
 ```txt
 /producthunt:login
 ```
 
-This stores your token in:
-
-```txt
-~/.pi/agent/pi-producthunt-auth.json
-```
-
-You can remove the stored token with:
+Remove the stored token with:
 
 ```txt
 /producthunt:logout
 ```
 
-You can also provide a token through the environment. Environment auth takes priority over the stored login token:
+`/producthunt:logout` only clears the stored login file. It does not change `PRODUCTHUNT_ACCESS_TOKEN` in your shell.
+
+Set a token through the environment when you prefer shell-based configuration:
 
 ```bash
 export PRODUCTHUNT_ACCESS_TOKEN=...
 ```
+
+Check auth without exposing secrets:
+
+```txt
+/producthunt:status
+```
+
+`/producthunt:status` reports the active token source (environment vs stored login), validates the token against the Product Hunt API when possible, and prints concise recovery steps for common failures:
+
+- missing token
+- unreadable or invalid stored login file
+- rejected or invalid API token
+- transient validation errors
+
+Token values are always redacted from status output, logs, and error messages.
 
 ## Commands
 

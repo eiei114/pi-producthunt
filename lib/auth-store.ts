@@ -28,17 +28,82 @@ function ensureAgentDir(): void {
   }
 }
 
-export function loadStoredAccessToken(): string | undefined {
-  const file = getAuthFilePath();
-  try {
-    if (!existsSync(file)) return undefined;
-    const parsed = JSON.parse(readFileSync(file, "utf-8")) as Partial<ProductHuntAuthRecord>;
-    if (parsed.type !== "access_token" || typeof parsed.accessToken !== "string") return undefined;
-    const trimmed = parsed.accessToken.trim();
-    return trimmed ? trimmed : undefined;
-  } catch {
-    return undefined;
+
+export type StoredTokenIssue = "missing" | "unreadable" | "invalid_format" | "empty_token";
+
+export interface StoredTokenInspection {
+  filePath: string;
+  fileExists: boolean;
+  loadable: boolean;
+  accessToken?: string;
+  issue?: StoredTokenIssue;
+  issueDetail?: string;
+}
+
+export function inspectStoredAccessToken(): StoredTokenInspection {
+  const filePath = getAuthFilePath();
+  if (!existsSync(filePath)) {
+    return { filePath, fileExists: false, loadable: false, issue: "missing" };
   }
+
+  try {
+    const raw = readFileSync(filePath, "utf-8");
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return {
+        filePath,
+        fileExists: true,
+        loadable: false,
+        issue: "unreadable",
+        issueDetail: "Auth file contains invalid JSON.",
+      };
+    }
+
+    if (typeof parsed !== "object" || parsed === null) {
+      return {
+        filePath,
+        fileExists: true,
+        loadable: false,
+        issue: "invalid_format",
+        issueDetail: "Auth file does not contain a valid access token record.",
+      };
+    }
+
+    const record = parsed as Partial<ProductHuntAuthRecord>;
+    if (record.type !== "access_token" || typeof record.accessToken !== "string") {
+      return {
+        filePath,
+        fileExists: true,
+        loadable: false,
+        issue: "invalid_format",
+        issueDetail: "Auth file does not contain a valid access token record.",
+      };
+    }
+
+    const trimmed = record.accessToken.trim();
+    if (!trimmed) {
+      return {
+        filePath,
+        fileExists: true,
+        loadable: false,
+        issue: "empty_token",
+        issueDetail: "Stored access token is empty.",
+      };
+    }
+
+    return { filePath, fileExists: true, loadable: true, accessToken: trimmed };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not read auth file.";
+    return { filePath, fileExists: true, loadable: false, issue: "unreadable", issueDetail: message };
+  }
+}
+
+
+export function loadStoredAccessToken(): string | undefined {
+  const inspection = inspectStoredAccessToken();
+  return inspection.loadable ? inspection.accessToken : undefined;
 }
 
 export function saveStoredAccessToken(accessToken: string): void {

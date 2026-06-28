@@ -8,10 +8,17 @@ This project follows semantic versioning.
 
 ### Added
 
+- Auth diagnostics for `/producthunt:status` and `producthunt_status` report active token source (environment vs stored login).
+- Actionable recovery guidance for missing tokens, unreadable auth files, invalid stored tokens, and API validation failures.
+- Tests for env, stored, missing, unreadable, and invalid token scenarios.
 - Compact topic watchlist output with bounded rationale fields (`why promising`, `launch timing`, `next url`).
 - `producthunt_topic_watchlist` agent tool and `/producthunt:watchlist` command for revisit-only shortlists.
 - Watchlist derivation from topic research and digest workflows.
 - `docs/watchlist.md` explaining when to use watchlist vs full research or digest output.
+
+### Changed
+
+- `inspectStoredAccessToken()` distinguishes missing, unreadable, and invalid stored login files.
 
 ## [0.1.4] - 2026-06-27
 
