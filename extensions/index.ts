@@ -3,7 +3,7 @@ import { Type } from "typebox";
 import { getPost, getPostComments, getPosts, researchTopic, searchPosts } from "../lib/client.ts";
 import { getProductHuntAuthDiagnostics, validateProductHuntAccess } from "../lib/auth-diagnostics.ts";
 import { PRODUCTHUNT_TOKEN_ENV, clearStoredAccessToken, saveStoredAccessToken } from "../lib/config.ts";
-import { formatAuthStatusReport, formatComments, formatDigest, formatPostDetails, formatPostList, formatResearch, formatTopicWatchlist } from "../lib/format.ts";
+import { formatAuthStatusReport, formatComments, formatDigest, formatPostDetails, formatPostList, formatProductCards, formatResearch, formatTopicWatchlist } from "../lib/format.ts";
 import { deriveWatchlistEntries } from "../lib/watchlist.ts";
 import { todayIsoDate, yesterdayIsoDate } from "../lib/identity.ts";
 import { StringEnum } from "../lib/schema.ts";
@@ -155,6 +155,23 @@ function registerTools(pi: ExtensionAPI) {
   });
 
   pi.registerTool({
+    name: "producthunt_research_product_cards",
+    label: "Product Hunt Research Product Cards",
+    description: "Export bounded markdown product cards from a Product Hunt research topic for vault notes",
+    promptSnippet: "producthunt_research_product_cards: drop compact launch cards into research notes",
+    promptGuidelines: [
+      "Use producthunt_research_product_cards when the user wants paste-ready launch cards instead of raw tool details JSON.",
+      "Prefer producthunt_research_topic when the user still needs full comment signals and synthesis prompts.",
+      "Prefer producthunt_topic_watchlist when the user only needs a ranked shortlist with rationale.",
+    ],
+    parameters: researchParameters,
+    async execute(_toolCallId, params, signal) {
+      const result = await researchTopic(params, { signal });
+      return { content: [{ type: "text", text: formatProductCards(result) }], details: { query: result.query, posts: result.posts } };
+    },
+  });
+
+  pi.registerTool({
     name: "producthunt_digest",
     label: "Product Hunt Digest",
     description: "Create digest-ready Markdown for Product Hunt launches on a date",
@@ -260,6 +277,15 @@ function registerCommands(pi: ExtensionAPI) {
       runCommand(pi, ctx, "watchlist", async () => {
         const query = await requiredInput(ctx, "Product Hunt watchlist", "Research topic or keyword");
         return formatTopicWatchlist(await researchTopic({ query, limit: 5, commentsPerPost: 3 }, { signal: ctx.signal }));
+      }),
+  });
+
+  pi.registerCommand("producthunt:cards", {
+    description: "Interactively export bounded markdown product cards for a research topic",
+    handler: async (_args, ctx) =>
+      runCommand(pi, ctx, "cards", async () => {
+        const query = await requiredInput(ctx, "Product Hunt product cards", "Research topic or keyword");
+        return formatProductCards(await researchTopic({ query, limit: 5, commentsPerPost: 3 }, { signal: ctx.signal }));
       }),
   });
 

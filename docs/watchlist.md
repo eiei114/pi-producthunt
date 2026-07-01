@@ -6,11 +6,14 @@ Pi Product Hunt can emit a compact **topic watchlist** when you want a short rev
 
 | Output | Best for | Includes |
 |---|---|---|
+| `producthunt_research_product_cards` / `/producthunt:cards` | Paste launch cards into notes | Compact per-product cards with launch fields |
 | `producthunt_topic_watchlist` / `/producthunt:watchlist` | Revisit shortlist only | Up to 5 products with bounded rationale |
 | `producthunt_research_topic` / `/producthunt:research` | Market or competitor research | Post details, comment signals, synthesis prompts, watchlist |
 | `producthunt_digest` / `/producthunt:digest` | Daily launch note material | Top launches, signals scaffold, reactions scaffold, watchlist |
 
-Use the watchlist when you already know the topic and only need promising products to inspect later. Use the full research pack when you still need comment evidence and synthesis prompts. Use the digest when the date matters more than the search query.
+Use product cards when you want stable note blocks without copying raw tool `details` JSON. Use the watchlist when you already know the topic and only need promising products to inspect later. Use the full research pack when you still need comment evidence and synthesis prompts. Use the digest when the date matters more than the search query.
+
+See [`research-pack.md`](research-pack.md) for a product-card example.
 
 ## Watchlist fields
 

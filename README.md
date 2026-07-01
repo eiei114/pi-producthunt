@@ -21,6 +21,7 @@ Pi Product Hunt is a read-only Pi extension package for Product Hunt market rese
 - Post detail and comment collection for user-reaction analysis.
 - Digest-ready Markdown with sections for signals, reactions, and topic watchlists.
 - Compact topic watchlists with bounded rationale for products worth revisiting.
+- Bounded markdown product cards for pasting launches into research notes.
 - Persistent login that stores your Product Hunt token in the Pi agent directory.
 - Agent tools with typed parameters for autonomous Product Hunt research.
 
@@ -154,6 +155,7 @@ Commands are human-facing and require no fixed inline arguments. If input is nee
 /producthunt:digest
 /producthunt:research
 /producthunt:watchlist
+/producthunt:cards
 ```
 
 Example flows:
@@ -166,6 +168,7 @@ Example flows:
 /producthunt:digest     # asks for today / yesterday / custom date
 /producthunt:research   # asks for a research topic
 /producthunt:watchlist  # asks for a topic and returns a compact revisit list
+/producthunt:cards      # asks for a topic and returns paste-ready product cards
 ```
 
 ## Agent tools
@@ -180,6 +183,7 @@ producthunt_get_post
 producthunt_get_post_comments
 producthunt_research_topic
 producthunt_topic_watchlist
+producthunt_research_product_cards
 producthunt_digest
 ```
 
@@ -191,9 +195,11 @@ producthunt_get_post({ ref: "example-product-slug" })
 producthunt_get_post_comments({ ref: "example-product-slug", limit: 10 })
 producthunt_digest({ date: "2026-06-01", limit: 10 })
 producthunt_topic_watchlist({ query: "AI coding agent", limit: 5 })
+producthunt_research_product_cards({ query: "AI coding agent", limit: 5 })
 ```
 
 See [`docs/watchlist.md`](docs/watchlist.md) for when to use a watchlist vs a full digest or research pack.
+See [`docs/research-pack.md`](docs/research-pack.md) for when to prefer product cards over raw tool output.
 
 ## Package contents
 
