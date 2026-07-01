@@ -66,3 +66,16 @@ test("formatProductCards wrapper applies global truncation guard", () => {
   const markdown = formatProductCardsWrapped({ query: "AI", posts: [post] });
   assert.match(markdown, /### AI Tool \(ai-tool\)/);
 });
+
+test("formatProductCards wrapper truncates oversized output", () => {
+  const manyPosts = Array.from({ length: 200 }, (_, i) => ({
+    ...post,
+    id: String(i),
+    slug: `post-${i}`,
+    name: `Post ${i}`,
+    url: `https://www.producthunt.com/posts/post-${i}`,
+  }));
+  const markdown = formatProductCardsWrapped({ query: "AI", posts: manyPosts });
+  assert.ok(markdown.length < JSON.stringify(manyPosts).length);
+  assert.match(markdown, /\[Truncated: \d+ chars omitted\]/);
+});
