@@ -1,6 +1,10 @@
 import type { AuthValidationResult, ProductHuntAuthDiagnostics } from "./auth-diagnostics.ts";
 import type { CommentSummary, PostCommentsResult, PostConnectionResult, PostDetails, PostListItem, ResearchTopicResult, ViewerResult, WatchlistEntry } from "./types.ts";
+import { formatProductCard, formatProductCards as formatProductCardsRaw } from "./product-card.ts";
 import { deriveWatchlistEntries } from "./watchlist.ts";
+
+export { formatProductCard };
+export type { ProductCardPost } from "./product-card.ts";
 
 const DEFAULT_MAX_CHARS = 16_000;
 
@@ -168,6 +172,10 @@ export function formatResearch(result: ResearchTopicResult): string {
 export function formatTopicWatchlist(result: ResearchTopicResult, maxEntries?: number): string {
   const entries = deriveWatchlistEntries(result, maxEntries);
   return truncateMarkdown(formatWatchlistSection(entries, result.query));
+}
+
+export function formatProductCards(result: ResearchTopicResult): string {
+  return truncateMarkdown(formatProductCardsRaw(result));
 }
 
 export function formatWatchlistSection(entries: WatchlistEntry[], query?: string): string {

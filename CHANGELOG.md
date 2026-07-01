@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
+## [0.3.0] - 2026-07-02
+
+### Added
+
+- Bounded markdown product cards for research-pack note workflows.
+- `producthunt_research_product_cards` agent tool and `/producthunt:cards` command.
+- `docs/research-pack.md` with when to prefer product cards over raw tool output.
+- Tests for single-card, multi-card, and empty-result formatting.
+
 ## [0.2.0] - 2026-06-28
 
 ### Added
