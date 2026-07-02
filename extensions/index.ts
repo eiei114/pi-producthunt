@@ -34,12 +34,13 @@ const postRefParameters = Type.Object({
 const commentsParameters = Type.Object({
   ref: Type.String({ description: "Product Hunt post slug, numeric ID, or Product Hunt post URL" }),
   limit,
-  order: Type.Optional(StringEnum(["RANKING", "NEWEST"], { description: "Product Hunt comments order" })),
+  order: Type.Optional(StringEnum(["NEWEST"], { description: "Product Hunt comments order (NEWEST only; RANKING is not supported by the API)" })),
 });
 
 const researchParameters = Type.Object({
   query: Type.String({ description: "Research topic or keyword" }),
   limit,
+  searchPool: Type.Optional(Type.Integer({ description: "Number of ranked posts to scan before filtering (max 100, default 20)", minimum: 1, maximum: 100 })),
   commentsPerPost: Type.Optional(Type.Integer({ description: "Comments to collect for each matched post", minimum: 0, maximum: 10 })),
 });
 

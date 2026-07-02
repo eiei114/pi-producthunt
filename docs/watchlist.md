@@ -19,7 +19,7 @@ See [`research-pack.md`](research-pack.md) for a product-card example.
 
 Each entry is bounded for Pi chat context:
 
-- `why promising` — short rationale from votes, comments, and comment signals
+- `why promising` — short rationale from votes, comments, and comment signals (bounded to 120 characters)
 - `launch timing` — featured or created date when available
 - `next url` — Product Hunt post URL to inspect next
 
@@ -33,10 +33,33 @@ producthunt_topic_watchlist({ query: "AI coding agent", limit: 5 })
 ## Topic watchlist: AI coding agent
 
 1. AI Tool (ai-tool)
-   - why promising: 100 votes and 12 comments; commenters ask about pricing
+   - why promising: 100 votes and 12 comments; commenters ask about pricing; topics: AI, Developer Tools
    - launch timing: Featured 2026-06-01
    - next url: https://www.producthunt.com/posts/ai-tool
 ```
+
+## How ranking works
+
+Watchlist entries are ranked by a weighted score: `votes + comments × 3 + comment_signals × 2 + signal_bonus`. The signal bonus rewards posts whose comments mention pricing, strong interest keywords (`love`, `great`, `awesome`, `interested`, `need this`, `useful`), or active questions. The top 5 entries are returned.
+
+## Comment signals
+
+The rationale field includes one of these comment-level signals when comments are available:
+
+- `commenters ask about pricing` — pricing, subscription, or cost keywords detected
+- `positive launch reactions in comments` — love/great/awesome/need this signals
+- `active questions in the thread` — how/when/support questions or question marks
+- `comment thread worth sampling` — comments exist but none of the above patterns were found
+
+If no comments were collected, only vote/comment counts and topics appear in the rationale.
+
+## Bounded rationale
+
+The `why promising` field is capped at 120 characters. When topics produce a long list, the field is truncated with an ellipsis (`…`). This keeps the watchlist compact for Pi chat context and vault notes.
+
+## Search pool
+
+Watchlist queries scan the top 20 ranked Product Hunt posts by default. Use the optional `searchPool` parameter to scan a wider pool (max 100) when the topic is narrow and the default pool returns too few matches. Note that the Product Hunt API has a query complexity cap; large search pools may be rejected.
 
 ## Read-only behavior
 
