@@ -83,3 +83,37 @@ test("deriveWatchlistEntries caps output to five entries", () => {
   assert.equal(entries.length, 5);
   assert.equal(entries[0].slug, "tool-7");
 });
+
+test("deriveWatchlistEntries truncates rationale with many topics", () => {
+  const longTopicsPost = {
+    ...basePost,
+    topics: [
+      { name: "Productivity", slug: "productivity" },
+      { name: "Developer Tools", slug: "developer-tools" },
+      { name: "Artificial Intelligence", slug: "ai" },
+      { name: "Open Source", slug: "open-source" },
+      { name: "SaaS", slug: "saas" },
+    ],
+  };
+
+  const entries = deriveWatchlistEntries({ query: "long", posts: [longTopicsPost] });
+  assert.equal(entries.length, 1);
+  assert.ok(entries[0].whyPromising.length <= 125, "rationale should be bounded near MAX_WATCHLIST_RATIONALE_CHARS");
+  assert.ok(entries[0].whyPromising.includes("topics:"), "rationale should include topics");
+});
+
+test("formatWatchlistSection entry with pre-truncated rationale stays compact", () => {
+  const truncatedRationale = "100 votes and 12 comments; topics: Productivity, Developer Tools, Artificial Intelligence, Open Source, S…";
+  const markdown = formatWatchlistSection([
+    {
+      name: "Long Tool",
+      slug: "long-tool",
+      whyPromising: truncatedRationale,
+      launchTiming: "Launched 2026-06-01",
+      nextUrl: "https://www.producthunt.com/posts/long-tool",
+    },
+  ]);
+
+  assert.ok(markdown.includes("…"), "pre-truncated rationale preserves ellipsis");
+  assert.ok(markdown.length < 600, "whole watchlist section stays compact");
+});

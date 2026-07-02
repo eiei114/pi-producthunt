@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
+## [0.3.1] - 2026-07-03
+
+### Fixed
+
+- `getPostComments` now uses `NEWEST` order instead of `RANKING` (Product Hunt API does not accept
+  `RANKING` for comments, causing all comment fetches to fail).
+- `researchTopic` default search pool reduced from 75 to 20 to stay under the Product Hunt API query
+  complexity cap. The `searchPool` parameter is now exposed on `producthunt_topic_watchlist` and
+  `producthunt_research_topic` tools/commands for callers who need a wider scan.
+- `searchPosts` default search pool reduced from 50 to 20 for the same complexity reason.
+
+### Added
+
+- `searchPool` parameter on `producthunt_topic_watchlist`, `producthunt_research_topic`,
+  `producthunt_research_product_cards`, and `/producthunt:watchlist` / `/producthunt:research` / `/producthunt:cards`.
+- `docs/watchlist.md` sections describing ranking algorithm, comment signal classification, bounded
+  rationale, and search pool guidance.
+- Tests for rationale truncation with many topics and pre-truncated rationale display.
+
 ## [0.3.0] - 2026-07-02
 
 ### Added

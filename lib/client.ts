@@ -14,7 +14,7 @@ import type {
 } from "./types.ts";
 
 type PostsOrder = "RANKING" | "NEWEST";
-type CommentsOrder = "RANKING" | "NEWEST";
+type CommentsOrder = "NEWEST";
 
 interface GraphQLEdge<T> {
   node: T;
@@ -126,7 +126,7 @@ export async function searchPosts(
   const query = params.query.trim().toLowerCase();
   if (!query) throw new Error("Search query is required.");
 
-  const searchPool = clampLimit(params.searchPool, 50, 100);
+  const searchPool = clampLimit(params.searchPool, 20, 100);
   const limit = clampLimit(params.limit, 10, 50);
   const result = await executeProductHuntGraphQL<{ posts: GraphQLConnection<RawPostListItem> }>(
     searchPostsQuery,
@@ -170,7 +170,7 @@ export async function getPostComments(
     {
       postId: identifier.id,
       postSlug: identifier.slug,
-      order: params.order ?? "RANKING",
+      order: params.order ?? "NEWEST",
       first: clampLimit(params.limit, 10, 50),
       after: params.after,
     },
@@ -189,10 +189,11 @@ export async function getPostComments(
 }
 
 export async function researchTopic(
-  params: { query: string; limit?: number; commentsPerPost?: number },
+  params: { query: string; limit?: number; searchPool?: number; commentsPerPost?: number },
   options: ProductHuntClientOptions = {},
 ): Promise<ResearchTopicResult> {
-  const posts = await searchPosts({ query: params.query, limit: params.limit ?? 5, searchPool: 75 }, options);
+  const searchPool = clampLimit(params.searchPool ?? 20, 20, 100);
+  const posts = await searchPosts({ query: params.query, limit: params.limit ?? 5, searchPool }, options);
   const commentsPerPost = clampLimit(params.commentsPerPost, 3, 10);
   const enriched: ResearchTopicResult["posts"] = [];
 
