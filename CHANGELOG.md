@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Strip UTM tracking query parameters from Product Hunt URLs in tool/command markdown output while preserving other query parameters.
 - Add Buy Me a Coffee sponsor button to README and native GitHub funding link via `.github/FUNDING.yml`.
 
 All notable changes to this project will be documented in this file.

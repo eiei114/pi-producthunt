@@ -1,4 +1,5 @@
 import type { CommentSummary, PostListItem, ResearchTopicResult, WatchlistEntry } from "./types.ts";
+import { displayProductHuntUrl } from "./urls.ts";
 
 export const DEFAULT_MAX_WATCHLIST_ENTRIES = 5;
 export const MAX_WATCHLIST_RATIONALE_CHARS = 120;
@@ -21,7 +22,7 @@ export function deriveWatchlistEntries(
     slug: post.slug,
     whyPromising: buildWhyPromising(post),
     launchTiming: buildLaunchTiming(post),
-    nextUrl: post.url ?? `https://www.producthunt.com/posts/${post.slug}`,
+    nextUrl: displayProductHuntUrl(post.url, post.slug),
   }));
 }
 

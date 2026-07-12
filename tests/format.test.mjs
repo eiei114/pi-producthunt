@@ -23,6 +23,19 @@ test("formatPostList creates compact markdown", () => {
   assert.match(markdown, /votes: 100, comments: 12/);
 });
 
+test("formatPostList strips utm params from Product Hunt URLs", () => {
+  const markdown = formatPostList("Title", {
+    posts: [
+      {
+        ...post,
+        url: "https://www.producthunt.com/posts/ai-tool?utm_source=newsletter&utm_medium=email",
+      },
+    ],
+  });
+  assert.match(markdown, /url: https:\/\/www\.producthunt\.com\/posts\/ai-tool$/m);
+  assert.doesNotMatch(markdown, /utm_/);
+});
+
 test("formatComments strips html", () => {
   const markdown = formatComments({
     post: { id: "1", slug: "ai-tool", name: "AI Tool" },
@@ -44,6 +57,12 @@ test("formatDigest includes populated watchlist section", () => {
   assert.match(markdown, /why promising:/);
 });
 
+test("formatTopicWatchlist stays compact", () => {
+  const markdown = formatTopicWatchlist({ query: "AI", posts: [post] });
+  assert.ok(markdown.length < 600);
+  assert.doesNotMatch(markdown, /Comment signals/);
+});
+
 test("formatResearch includes topic watchlist section", () => {
   const markdown = formatResearch({
     query: "AI",
@@ -53,10 +72,4 @@ test("formatResearch includes topic watchlist section", () => {
   assert.match(markdown, /Comment signals/);
   assert.match(markdown, /I need pricing/);
   assert.match(markdown, /## Topic watchlist: AI/);
-});
-
-test("formatTopicWatchlist stays compact", () => {
-  const markdown = formatTopicWatchlist({ query: "AI", posts: [post] });
-  assert.ok(markdown.length < 600);
-  assert.doesNotMatch(markdown, /Comment signals/);
 });
