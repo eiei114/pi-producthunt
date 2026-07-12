@@ -9,6 +9,12 @@ test("stripUtmFromProductHuntUrl removes utm_* params from Product Hunt URLs", (
   assert.equal(output, "https://www.producthunt.com/posts/ai-tool?ref=home");
 });
 
+test("stripUtmFromProductHuntUrl handles mixed-case utm param names", () => {
+  const input = "https://www.producthunt.com/posts/ai-tool?UTM_SOURCE=newsletter&Utm_Campaign=launch&ref=home";
+  const output = stripUtmFromProductHuntUrl(input);
+  assert.equal(output, "https://www.producthunt.com/posts/ai-tool?ref=home");
+});
+
 test("stripUtmFromProductHuntUrl removes utm params when no other query params remain", () => {
   const input = "https://www.producthunt.com/posts/ai-tool?utm_source=newsletter&utm_medium=email";
   const output = stripUtmFromProductHuntUrl(input);
