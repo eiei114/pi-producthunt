@@ -1,4 +1,5 @@
 import type { CommentSummary, PostListItem, ResearchTopicResult } from "./types.ts";
+import { displayProductHuntUrl } from "./urls.ts";
 
 export const MAX_PRODUCT_CARD_TAGLINE_CHARS = 120;
 export const MAX_PRODUCT_CARD_SIGNAL_CHARS = 100;
@@ -21,7 +22,7 @@ export function formatProductCard(post: ProductCardPost): string {
   const signal = summarizeCommentSignal(post.comments ?? []);
   if (signal) lines.push(`- signal: ${signal}`);
 
-  lines.push(`- url: ${post.url ?? `https://www.producthunt.com/posts/${post.slug}`}`);
+  lines.push(`- url: ${displayProductHuntUrl(post.url, post.slug)}`);
 
   return lines.join("\n");
 }

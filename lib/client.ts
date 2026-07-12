@@ -1,5 +1,6 @@
 import { executeProductHuntGraphQL } from "./api.ts";
 import { dateRangeForDay, normalizePostIdentifier } from "./identity.ts";
+import { stripUtmFromProductHuntUrl } from "./urls.ts";
 import { postCommentsQuery, postDetailsQuery, postsQuery, searchPostsQuery, viewerQuery } from "./queries.ts";
 import type {
   CommentSummary,
@@ -215,7 +216,7 @@ function cleanPostListItem(raw: RawPostListItem): PostListItem {
     slug: raw.slug,
     name: raw.name,
     tagline: raw.tagline,
-    url: raw.url,
+    url: stripUtmFromProductHuntUrl(raw.url) ?? raw.url,
     votesCount: raw.votesCount,
     commentsCount: raw.commentsCount,
     featuredAt: raw.featuredAt,

@@ -33,6 +33,16 @@ test("formatProductCard renders one bounded launch card", () => {
   assert.doesNotMatch(markdown, /Comment signals/);
 });
 
+test("formatProductCard strips utm params from Product Hunt URLs", () => {
+  const markdown = formatProductCard({
+    ...post,
+    url: "https://www.producthunt.com/posts/ai-tool?utm_source=newsletter&utm_campaign=launch",
+  });
+
+  assert.match(markdown, /url: https:\/\/www\.producthunt\.com\/posts\/ai-tool$/m);
+  assert.doesNotMatch(markdown, /utm_/);
+});
+
 test("formatProductCards renders multiple cards with separators", () => {
   const markdown = formatProductCards({
     query: "AI coding agent",

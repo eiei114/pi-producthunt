@@ -84,6 +84,20 @@ test("deriveWatchlistEntries caps output to five entries", () => {
   assert.equal(entries[0].slug, "tool-7");
 });
 
+test("deriveWatchlistEntries strips utm params from nextUrl", () => {
+  const entries = deriveWatchlistEntries({
+    query: "AI",
+    posts: [
+      {
+        ...basePost,
+        url: "https://www.producthunt.com/posts/ai-tool?utm_source=newsletter&utm_medium=email&ref=home",
+      },
+    ],
+  });
+
+  assert.equal(entries[0].nextUrl, "https://www.producthunt.com/posts/ai-tool?ref=home");
+});
+
 test("deriveWatchlistEntries truncates rationale with many topics", () => {
   const longTopicsPost = {
     ...basePost,

@@ -1,6 +1,7 @@
 import type { AuthValidationResult, ProductHuntAuthDiagnostics } from "./auth-diagnostics.ts";
 import type { CommentSummary, PostCommentsResult, PostConnectionResult, PostDetails, PostListItem, ResearchTopicResult, ViewerResult, WatchlistEntry } from "./types.ts";
 import { formatProductCard, formatProductCards as formatProductCardsRaw } from "./product-card.ts";
+import { displayProductHuntUrl } from "./urls.ts";
 import { deriveWatchlistEntries } from "./watchlist.ts";
 
 export { formatProductCard };
@@ -70,7 +71,7 @@ export function formatPostList(title: string, result: PostConnectionResult): str
     lines.push(`   - ${post.tagline ?? "No tagline"}`);
     lines.push(`   - votes: ${post.votesCount ?? "?"}, comments: ${post.commentsCount ?? "?"}`);
     lines.push(`   - slug: ${post.slug}`);
-    if (post.url) lines.push(`   - url: ${post.url}`);
+    if (post.url) lines.push(`   - url: ${displayProductHuntUrl(post.url, post.slug)}`);
     if (post.topics.length) lines.push(`   - topics: ${post.topics.map((topic) => topic.name).join(", ")}`);
   });
 
@@ -87,7 +88,7 @@ export function formatPostDetails(post: PostDetails): string {
   lines.push(`- votes: ${post.votesCount ?? "?"}`);
   lines.push(`- comments: ${post.commentsCount ?? "?"}`);
   if (post.featuredAt) lines.push(`- featured: ${post.featuredAt}`);
-  if (post.url) lines.push(`- Product Hunt: ${post.url}`);
+  if (post.url) lines.push(`- Product Hunt: ${displayProductHuntUrl(post.url, post.slug)}`);
   if (post.website) lines.push(`- website: ${post.website}`);
   if (post.topics.length) lines.push(`- topics: ${post.topics.map((topic) => topic.name).join(", ")}`);
   if (post.makers.length) lines.push(`- makers: ${post.makers.map(formatMaker).join(", ")}`);
@@ -121,7 +122,7 @@ export function formatDigest(date: string, result: ResearchTopicResult | PostCon
     lines.push(`${index + 1}. ${formatPostHeadline(post)}`);
     lines.push(`   - tagline: ${post.tagline ?? ""}`);
     lines.push(`   - votes: ${post.votesCount ?? "?"}, comments: ${post.commentsCount ?? "?"}`);
-    lines.push(`   - url: ${post.url ?? `https://www.producthunt.com/posts/${post.slug}`}`);
+    lines.push(`   - url: ${displayProductHuntUrl(post.url, post.slug)}`);
     lines.push("   - why notable: ");
     const comments = getInlineComments(post);
     if (comments.length) {
@@ -155,7 +156,7 @@ export function formatResearch(result: ResearchTopicResult): string {
     lines.push(`## ${index + 1}. ${formatPostHeadline(post)}`);
     lines.push(post.tagline ?? "");
     lines.push(`votes: ${post.votesCount ?? "?"}, comments: ${post.commentsCount ?? "?"}`);
-    lines.push(`url: ${post.url ?? `https://www.producthunt.com/posts/${post.slug}`}`);
+    lines.push(`url: ${displayProductHuntUrl(post.url, post.slug)}`);
     if (post.topics.length) lines.push(`topics: ${post.topics.map((topic) => topic.name).join(", ")}`);
     if (post.comments?.length) {
       lines.push("", "### Comment signals");
@@ -189,7 +190,7 @@ export function formatWatchlistSection(entries: WatchlistEntry[], query?: string
     lines.push(`${index + 1}. ${entry.name} (${entry.slug})`);
     lines.push(`   - why promising: ${entry.whyPromising}`);
     lines.push(`   - launch timing: ${entry.launchTiming}`);
-    lines.push(`   - next url: ${entry.nextUrl}`);
+    lines.push(`   - next url: ${displayProductHuntUrl(entry.nextUrl, entry.slug)}`);
   });
 
   return lines.join("\n");
