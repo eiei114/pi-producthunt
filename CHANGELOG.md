@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- Bump package version to `0.3.2` for the next patch release.
+
 - Strip UTM tracking query parameters from Product Hunt URLs in tool/command markdown output while preserving other query parameters.
 - Add Buy Me a Coffee sponsor button to README and native GitHub funding link via `.github/FUNDING.yml`.
 
