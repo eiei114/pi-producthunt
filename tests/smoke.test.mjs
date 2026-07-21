@@ -57,6 +57,7 @@ test("docs/examples.md documents pi-producthunt instead of template placeholders
   }
 
   assert.match(examplesDoc, /\/producthunt:/);
+  assert.match(examplesDoc, /\/producthunt:today/);
   assert.match(examplesDoc, /producthunt_get_posts/);
   assert.match(examplesDoc, /extensions\/index\.ts/);
 });
