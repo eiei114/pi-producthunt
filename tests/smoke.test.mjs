@@ -4,6 +4,7 @@ import test from "node:test";
 
 const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
 const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+const examplesDoc = await readFile(new URL("../docs/examples.md", import.meta.url), "utf8");
 
 test("package declares pi resources", () => {
   assert.deepEqual(packageJson.pi.extensions, ["./extensions"]);
@@ -34,4 +35,28 @@ test("README version pin example matches package.json version", () => {
       `README pinned version ${version} should match package.json version ${packageJson.version}`,
     );
   }
+});
+
+test("docs/examples.md documents pi-producthunt instead of template placeholders", () => {
+  const staleMarkers = [
+    "template-hello",
+    "extensions/hello.ts",
+    "template_greet",
+    "skills/example-skill",
+    "prompts/example.md",
+    "themes/example-theme.json",
+    "lib/greeting.ts",
+  ];
+
+  for (const marker of staleMarkers) {
+    assert.equal(
+      examplesDoc.includes(marker),
+      false,
+      `docs/examples.md should not reference stale template marker: ${marker}`,
+    );
+  }
+
+  assert.match(examplesDoc, /\/producthunt:/);
+  assert.match(examplesDoc, /producthunt_get_posts/);
+  assert.match(examplesDoc, /extensions\/index\.ts/);
 });

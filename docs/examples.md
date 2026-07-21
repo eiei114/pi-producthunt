@@ -1,49 +1,62 @@
 # Examples
 
-This template ships one minimal example for each Pi package resource type.
+Pi Product Hunt ships one extension entrypoint and typed agent tools for Product Hunt research.
 
-## Extension
+## Local development
 
-`extensions/hello.ts` registers:
-
-- `/template-hello`
-- a small session status indicator
-
-Try it with:
+Load the checkout into Pi without publishing:
 
 ```bash
 pi -e .
 ```
 
-Then run:
+Authenticate and verify access:
 
 ```txt
-/template-hello YourName
+/producthunt:login
+/producthunt:status
 ```
 
-## Agent Skill
+## Interactive commands
 
-`skills/example-skill/SKILL.md` demonstrates a minimal Agent Skill.
+`extensions/index.ts` registers human-facing `/producthunt:*` commands. These ask for input when needed:
 
-Replace it with your real workflow instructions.
+```txt
+/producthunt:today
+/producthunt:search
+/producthunt:post
+/producthunt:comments
+/producthunt:digest
+/producthunt:research
+/producthunt:watchlist
+/producthunt:cards
+```
 
-## Prompt template
+Example flow:
 
-`prompts/example.md` demonstrates a tiny prompt template with one variable.
+```txt
+/producthunt:search
+```
 
-## Theme
+Then enter a topic such as `AI coding agent` when Pi prompts for it.
 
-`themes/example-theme.json` is a placeholder theme. Replace it or remove `themes/` if your package does not ship themes.
+## Agent tools
 
-## Typed custom tool
+The same extension registers typed tools for autonomous research:
 
-`extensions/index.ts` registers:
+```txt
+producthunt_status()
+producthunt_get_posts({ limit: 5 })
+producthunt_search_posts({ query: "AI coding agent", limit: 10 })
+producthunt_get_post({ ref: "example-product-slug" })
+producthunt_get_post_comments({ ref: "example-product-slug", limit: 10 })
+producthunt_research_topic({ query: "AI coding agent", limit: 5 })
+producthunt_topic_watchlist({ query: "AI coding agent", limit: 5 })
+producthunt_research_product_cards({ query: "AI coding agent", limit: 5 })
+producthunt_digest({ date: "2026-06-01", limit: 10 })
+```
 
-- `/template-info`
-- `template_greet` custom tool
+## Related docs
 
-The tool demonstrates:
-
-- TypeBox object parameters
-- a string enum schema via `StringEnum`
-- shared logic imported from `lib/greeting.ts`
+- [`watchlist.md`](watchlist.md) — when to use watchlists vs digests
+- [`research-pack.md`](research-pack.md) — product card output examples
