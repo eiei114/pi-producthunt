@@ -4,6 +4,10 @@ import test from "node:test";
 
 const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
 const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+const autoReleaseWorkflow = await readFile(
+  new URL("../.github/workflows/auto-release.yml", import.meta.url),
+  "utf8",
+);
 const examplesDoc = await readFile(new URL("../docs/examples.md", import.meta.url), "utf8");
 
 test("package declares pi resources", () => {
@@ -16,6 +20,28 @@ test("package is discoverable as a Pi package", () => {
 
 test("package uses public publish config", () => {
   assert.equal(packageJson.publishConfig.access, "public");
+});
+
+test("auto-release workflow GH_TOKEN values are not corrupted with literal \\n", () => {
+  const ghTokenLines = autoReleaseWorkflow
+    .split("\n")
+    .filter((line) => line.includes("GH_TOKEN:"));
+
+  assert.ok(ghTokenLines.length > 0, "auto-release.yml should define GH_TOKEN");
+
+  for (const line of ghTokenLines) {
+    assert.equal(
+      /\\n\s*$/.test(line),
+      false,
+      `auto-release.yml GH_TOKEN line must not end with literal \\n: ${line}`,
+    );
+  }
+
+  assert.equal(
+    /\$\{\{\s*secrets\.GITHUB_TOKEN\s*\}\}\\n/.test(autoReleaseWorkflow),
+    false,
+    "auto-release.yml must not embed a corrupted GH_TOKEN value with trailing \\n",
+  );
 });
 
 test("README version pin example matches package.json version", () => {
