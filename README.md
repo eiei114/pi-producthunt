@@ -39,7 +39,7 @@ pi install npm:pi-producthunt
 Pin a specific version when you want reproducible installs:
 
 ```bash
-pi install npm:pi-producthunt@0.3.2
+pi install npm:pi-producthunt@0.3.3
 ```
 
 Install into the current project instead of your user Pi settings:
