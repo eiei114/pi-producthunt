@@ -9,6 +9,11 @@ const autoReleaseWorkflow = await readFile(
   "utf8",
 );
 const examplesDoc = await readFile(new URL("../docs/examples.md", import.meta.url), "utf8");
+const releaseDoc = await readFile(new URL("../docs/release.md", import.meta.url), "utf8");
+const templateChecklistDoc = await readFile(
+  new URL("../docs/template-checklist.md", import.meta.url),
+  "utf8",
+);
 
 test("package declares pi resources", () => {
   assert.deepEqual(packageJson.pi.extensions, ["./extensions"]);
@@ -86,4 +91,23 @@ test("docs/examples.md documents pi-producthunt instead of template placeholders
   assert.match(examplesDoc, /\/producthunt:today/);
   assert.match(examplesDoc, /producthunt_get_posts/);
   assert.match(examplesDoc, /extensions\/index\.ts/);
+});
+
+test("release docs checklist lines are not corrupted with literal \\n", () => {
+  const docsToCheck = [
+    { name: "docs/release.md", content: releaseDoc },
+    { name: "docs/template-checklist.md", content: templateChecklistDoc },
+  ];
+
+  for (const { name, content } of docsToCheck) {
+    const corruptedLines = content
+      .split("\n")
+      .filter((line) => /\\n\s*$/.test(line) && line.includes("- [ ]"));
+
+    assert.deepEqual(
+      corruptedLines,
+      [],
+      `${name} checklist items must not end with literal \\n: ${corruptedLines.join(" | ")}`,
+    );
+  }
 });
