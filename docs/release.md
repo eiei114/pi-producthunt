@@ -42,4 +42,4 @@ The workflow skips `name@version` if that exact package version already exists o
 - [ ] npm Trusted Publisher is configured
 - [ ] `npm run ci` passes
 - [ ] `npm pack --dry-run` contains only intended files
-- [ ] `CHANGELOG.md` has the release date\n
+- [ ] `CHANGELOG.md` has the release date

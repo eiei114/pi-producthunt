@@ -95,4 +95,4 @@
 - [ ] `pi install git:github.com/OWNER/REPO` を試す
 - [ ] `pi -e .` を試す
 - [ ] README のコマンドがコピペで動くか確認する
-- [ ] CHANGELOG に `0.1.0` を書く\n
+- [ ] CHANGELOG に `0.1.0` を書く
