@@ -28,7 +28,10 @@ function compareSemver(a, b) {
 
 function getUnreleasedSection(markdown) {
   const match = markdown.match(/## Unreleased\n([\s\S]*?)(?=\n## \[)/);
-  return match?.[1] ?? "";
+  if (!match) {
+    throw new Error("CHANGELOG.md must include a ## Unreleased section");
+  }
+  return match[1];
 }
 
 test("CHANGELOG unreleased bump targets stay ahead of package.json version", () => {
