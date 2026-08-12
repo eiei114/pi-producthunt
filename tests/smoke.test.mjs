@@ -10,10 +10,56 @@ const autoReleaseWorkflow = await readFile(
 );
 const examplesDoc = await readFile(new URL("../docs/examples.md", import.meta.url), "utf8");
 const releaseDoc = await readFile(new URL("../docs/release.md", import.meta.url), "utf8");
+const changelog = await readFile(new URL("../CHANGELOG.md", import.meta.url), "utf8");
 const templateChecklistDoc = await readFile(
   new URL("../docs/template-checklist.md", import.meta.url),
   "utf8",
 );
+
+function compareSemver(a, b) {
+  const parse = (version) => version.split(".").map((part) => Number(part));
+  const [aMajor, aMinor, aPatch] = parse(a);
+  const [bMajor, bMinor, bPatch] = parse(b);
+
+  if (aMajor !== bMajor) return aMajor - bMajor;
+  if (aMinor !== bMinor) return aMinor - bMinor;
+  return aPatch - bPatch;
+}
+
+function getUnreleasedSection(markdown) {
+  const match = markdown.match(/## Unreleased\n([\s\S]*?)(?=\n## \[)/);
+  if (!match) {
+    throw new Error("CHANGELOG.md must include a ## Unreleased section");
+  }
+  return match[1];
+}
+
+test("CHANGELOG unreleased bump targets stay ahead of package.json version", () => {
+  const unreleased = getUnreleasedSection(changelog);
+  const bumpVersions = [
+    ...unreleased.matchAll(/Bump package version to `(\d+\.\d+\.\d+)`/g),
+  ].map((match) => match[1]);
+
+  for (const version of bumpVersions) {
+    assert.ok(
+      compareSemver(version, packageJson.version) > 0,
+      `CHANGELOG Unreleased bump target ${version} must be newer than package.json version ${packageJson.version}`,
+    );
+  }
+});
+
+test("CHANGELOG documents shipped patch releases below package.json version", () => {
+  const [major, minor, patch] = packageJson.version.split(".").map(Number);
+
+  for (let patchVersion = 0; patchVersion < patch; patchVersion += 1) {
+    const version = `${major}.${minor}.${patchVersion}`;
+    assert.match(
+      changelog,
+      new RegExp(`## \\[${version.replace(/\./g, "\\.")}\\]`),
+      `CHANGELOG should include a release section for ${version}`,
+    );
+  }
+});
 
 test("package declares pi resources", () => {
   assert.deepEqual(packageJson.pi.extensions, ["./extensions"]);
