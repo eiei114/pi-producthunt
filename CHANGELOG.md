@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## [0.3.4] - 2026-08-22
+
+### Changed
+
+- Merge the 2026-08-22 managed OSS dependency and maintenance PR batch.
+
 All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
@@ -96,4 +102,3 @@ This project follows semantic versioning.
 - Initial Pi package template.
 - Example extension, Agent Skill, prompt, and theme.
 - CI and npm Trusted Publishing workflow.
-

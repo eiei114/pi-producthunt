@@ -1,6 +1,6 @@
 {
   "name": "pi-producthunt",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Pi extension package for Product Hunt research and digest workflows.",
   "type": "module",
   "license": "MIT",
