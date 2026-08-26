@@ -34,6 +34,22 @@ function getUnreleasedSection(markdown) {
   return match[1];
 }
 
+test("CHANGELOG preamble stays before release sections", () => {
+  const preamble = "All notable changes to this project will be documented in this file.";
+  const firstReleaseIndex = changelog.search(/^## \[\d/m);
+  const preambleIndex = changelog.indexOf(preamble);
+
+  assert.ok(preambleIndex >= 0, "CHANGELOG should include standard preamble");
+  assert.ok(
+    firstReleaseIndex >= 0,
+    "CHANGELOG should include at least one release section",
+  );
+  assert.ok(
+    preambleIndex < firstReleaseIndex,
+    "CHANGELOG preamble must appear before the first release section",
+  );
+});
+
 test("CHANGELOG unreleased bump targets stay ahead of package.json version", () => {
   const unreleased = getUnreleasedSection(changelog);
   const bumpVersions = [
