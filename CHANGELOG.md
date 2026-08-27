@@ -1,5 +1,9 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+This project follows semantic versioning.
+
 ## Unreleased
 
 ## [0.3.4] - 2026-08-22
@@ -7,10 +11,6 @@
 ### Changed
 
 - Merge the 2026-08-22 managed OSS dependency and maintenance PR batch.
-
-All notable changes to this project will be documented in this file.
-
-This project follows semantic versioning.
 
 ## [0.3.3] - 2026-08-04
 
