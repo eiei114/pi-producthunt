@@ -7,7 +7,7 @@
  * - Ensures publish/auto-release workflow files are present
  * - Runs npm pack --dry-run as a non-publish release artifact check
  */
-import { execFileSync, execSync } from "node:child_process";
+import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,10 +19,6 @@ const packageJsonPath = path.join(root, "package.json");
 
 function run(cmd) {
   return execSync(cmd, { cwd: root, encoding: "utf8", timeout: 30000 }).trim();
-}
-
-function runFile(file, args) {
-  return execFileSync(file, args, { cwd: root, encoding: "utf8", timeout: 30000 }).trim();
 }
 
 function fail(message) {
@@ -54,7 +50,7 @@ ok(`local package is ${name}@${version}`);
 
 let npmVersion = "";
 try {
-  npmVersion = runFile("npm", ["view", `${name}@${version}`, "version"]);
+  npmVersion = run(`npm view ${name}@${version} version`);
 } catch (error) {
   const output = String(error.stdout ?? "") + String(error.stderr ?? "");
   if (/E404|404 Not Found/.test(output)) {
