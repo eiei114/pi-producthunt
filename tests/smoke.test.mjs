@@ -15,6 +15,10 @@ const templateChecklistDoc = await readFile(
   new URL("../docs/template-checklist.md", import.meta.url),
   "utf8",
 );
+const releasePipelineScript = await readFile(
+  new URL("../scripts/check-release-pipeline.mjs", import.meta.url),
+  "utf8",
+);
 
 function compareSemver(a, b) {
   const parse = (version) => version.split(".").map((part) => Number(part));
@@ -160,6 +164,19 @@ test("docs/examples.md documents pi-producthunt instead of template placeholders
   assert.match(examplesDoc, /\/producthunt:today/);
   assert.match(examplesDoc, /producthunt_get_posts/);
   assert.match(examplesDoc, /extensions\/index\.ts/);
+});
+
+test("check-release-pipeline uses shell-backed npm view on Windows", () => {
+  assert.equal(
+    releasePipelineScript.includes('runFile("npm"'),
+    false,
+    "check-release-pipeline.mjs must not call execFileSync('npm') directly; use run() so release:investigate works on Windows",
+  );
+  assert.match(
+    releasePipelineScript,
+    /npm view \$\{name\}@\$\{version\} version/,
+    "check-release-pipeline.mjs should query npm registry through run()",
+  );
 });
 
 test("release docs checklist lines are not corrupted with literal \\n", () => {
