@@ -1,6 +1,7 @@
 import type { AuthValidationResult, ProductHuntAuthDiagnostics } from "./auth-diagnostics.ts";
 import type { CommentSummary, PostCommentsResult, PostConnectionResult, PostDetails, PostListItem, ResearchTopicResult, ViewerResult, WatchlistEntry } from "./types.ts";
 import { formatProductCard, formatProductCards as formatProductCardsRaw } from "./product-card.ts";
+import { stripHtml, truncateSingleLine } from "./text.ts";
 import { displayProductHuntUrl } from "./urls.ts";
 import { deriveWatchlistEntries } from "./watchlist.ts";
 
@@ -128,7 +129,7 @@ export function formatDigest(date: string, result: ResearchTopicResult | PostCon
     if (comments.length) {
       lines.push("   - reaction samples:");
       comments.slice(0, 3).forEach((comment) => {
-        lines.push(`     - ${truncateLine(stripHtml(comment.body), 180)}`);
+        lines.push(`     - ${truncateSingleLine(stripHtml(comment.body), 180)}`);
       });
     }
   });
@@ -160,7 +161,7 @@ export function formatResearch(result: ResearchTopicResult): string {
     if (post.topics.length) lines.push(`topics: ${post.topics.map((topic) => topic.name).join(", ")}`);
     if (post.comments?.length) {
       lines.push("", "### Comment signals");
-      post.comments.forEach((comment) => lines.push(`- ${truncateLine(stripHtml(comment.body), 220)}`));
+      post.comments.forEach((comment) => lines.push(`- ${truncateSingleLine(stripHtml(comment.body), 220)}`));
     }
     lines.push("");
   });
@@ -212,23 +213,5 @@ function formatMaker(maker: { name: string; username?: string | null }): string 
 function formatRateLimit(rateLimit: { limit?: string; remaining?: string; reset?: string } | undefined): string {
   if (!rateLimit?.remaining) return "";
   return `\n\nRate limit: ${rateLimit.remaining}/${rateLimit.limit ?? "?"} remaining, reset ${rateLimit.reset ?? "?"}s`;
-}
-
-function stripHtml(text: string): string {
-  return text
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .trim();
-}
-
-function truncateLine(text: string, maxChars: number): string {
-  const singleLine = text.replace(/\s+/g, " ").trim();
-  if (singleLine.length <= maxChars) return singleLine;
-  return `${singleLine.slice(0, maxChars - 1)}…`;
 }
 
