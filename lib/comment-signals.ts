@@ -22,12 +22,14 @@ export function classifyCommentText(text: string): CommentSignalKind {
 }
 
 export function classifyComments(comments: CommentSummary[]): CommentSignalKind {
-  const bodies = comments.map((comment) => stripHtml(comment.body).toLowerCase()).filter(Boolean);
-  if (!bodies.length) return "none";
-  if (bodies.some((body) => PRICING_PATTERN.test(body))) return "pricing";
-  if (bodies.some((body) => POSITIVE_PATTERN.test(body))) return "positive";
-  if (bodies.some((body) => QUESTION_PATTERN.test(body))) return "question";
-  return "none";
+  let best: CommentSignalKind = "none";
+  for (const comment of comments) {
+    const kind = classifyCommentText(stripHtml(comment.body).toLowerCase());
+    if (kind === "pricing") return kind;
+    if (kind === "positive") best = "positive";
+    else if (kind === "question" && best === "none") best = "question";
+  }
+  return best;
 }
 
 export function commentSignalWeight(comment: CommentSummary): number {
