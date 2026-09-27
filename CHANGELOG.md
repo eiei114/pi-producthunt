@@ -1,52 +1,36 @@
 # Changelog
 
-## [Unreleased]
+## Unreleased
 
 ## [0.3.9] - 2026-09-27
 
 - chore: periodic patch bump after 7+ days without npm publish
 
-## 0.3.8 - 2026-09-27
 
-- chore: periodic patch bump after 7+ days without npm publish
 
-## 0.3.7 - 2026-09-27
 
-- chore: periodic patch bump after 7+ days without npm publish
-
-## 0.3.6 - 2026-09-27
-
-- chore: periodic patch bump after 7+ days without npm publish
-
-## 0.3.5 - 2026-09-27
-
-- chore: periodic patch bump after 7+ days without npm publish
 
 All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
 ## Unreleased
-
 ## [0.3.4] - 2026-08-22
 
 ### Changed
 
 - Merge the 2026-08-22 managed OSS dependency and maintenance PR batch.
-
 ## [0.3.3] - 2026-08-04
 
 ### Changed
 
 - Bump package version for the Discord release webhook verification.
-
 ## [0.3.2] - 2026-07-21
 
 ### Changed
 
 - Strip UTM tracking query parameters from Product Hunt URLs in tool/command markdown output while preserving other query parameters.
 - Add Buy Me a Coffee sponsor button to README and native GitHub funding link via `.github/FUNDING.yml`.
-
 ## [0.3.1] - 2026-07-03
 
 ### Fixed
@@ -65,7 +49,6 @@ This project follows semantic versioning.
 - `docs/watchlist.md` sections describing ranking algorithm, comment signal classification, bounded
   rationale, and search pool guidance.
 - Tests for rationale truncation with many topics and pre-truncated rationale display.
-
 ## [0.3.0] - 2026-07-02
 
 ### Added
@@ -74,7 +57,6 @@ This project follows semantic versioning.
 - `producthunt_research_product_cards` agent tool and `/producthunt:cards` command.
 - `docs/research-pack.md` with when to prefer product cards over raw tool output.
 - Tests for single-card, multi-card, and empty-result formatting.
-
 ## [0.2.0] - 2026-06-28
 
 ### Added
@@ -90,25 +72,21 @@ This project follows semantic versioning.
 ### Changed
 
 - `inspectStoredAccessToken()` distinguishes missing, unreadable, and invalid stored login files.
-
 ## [0.1.4] - 2026-06-27
 
 ### Changed
 
 - Aligned README structure with the current Pi extension template while preserving Product Hunt authentication, commands, and agent tool documentation.
-
 ## [0.1.3] - 2026-06-05
 
 ### Changed
 
 - Patch bump to verify npm publish workflow.
-
 ## [0.1.2] - 2026-06-05
 
 ### Changed
 
 - Removed stale template scaffolding docs from the published package.
-
 ## [0.1.1] - 2026-06-01
 
 ### Changed
@@ -116,7 +94,6 @@ This project follows semantic versioning.
 - Publish workflow now supports npm publishing on merged package version bumps in addition to tags, releases, and manual dispatch.
 - Publish workflow now installs a current npm CLI so npm Trusted Publishing OIDC is supported.
 - CI and publish workflow commands no longer include literal trailing `\\n` text.
-
 ## [0.1.0] - YYYY-MM-DD
 
 ### Added
