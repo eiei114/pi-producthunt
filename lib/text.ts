@@ -1,13 +1,18 @@
+const HTML_TOKEN_PATTERN = /<br\s*\/?>|<[^>]+>|&(?:amp|lt|gt|quot|#39);/gi;
+
 export function stripHtml(text: string): string {
-  return text
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .trim();
+  return text.replace(HTML_TOKEN_PATTERN, (token) => {
+    if (token.slice(1, 3).toLowerCase() === "br") return "\n";
+    if (token.startsWith("<")) return "";
+    switch (token) {
+      case "&amp;": return "&";
+      case "&lt;": return "<";
+      case "&gt;": return ">";
+      case "&quot;": return '"';
+      case "&#39;": return "'";
+      default: return token;
+    }
+  }).trim();
 }
 
 export function truncateSingleLine(text: string, maxChars: number): string {
