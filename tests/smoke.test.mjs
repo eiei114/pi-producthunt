@@ -163,6 +163,16 @@ test("docs/examples.md documents pi-producthunt instead of template placeholders
   assert.match(examplesDoc, /\/producthunt:/);
   assert.match(examplesDoc, /\/producthunt:today/);
   assert.match(examplesDoc, /producthunt_get_posts/);
+  assert.match(
+    examplesDoc,
+    /producthunt_research_topic\(\{ query: "AI coding agent", limit: 5, searchPool: 20, commentsPerPost: 3 \}\)/,
+    "docs/examples.md should show current research tuning options",
+  );
+  assert.match(
+    examplesDoc,
+    /producthunt_digest\(\{ limit: 10, commentsPerPost: 3 \}\)/,
+    "docs/examples.md should use the digest's current optional parameters without a stale date",
+  );
   assert.match(examplesDoc, /extensions\/index\.ts/);
 });
 

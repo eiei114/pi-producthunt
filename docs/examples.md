@@ -50,10 +50,10 @@ producthunt_get_posts({ limit: 5 })
 producthunt_search_posts({ query: "AI coding agent", limit: 10 })
 producthunt_get_post({ ref: "example-product-slug" })
 producthunt_get_post_comments({ ref: "example-product-slug", limit: 10 })
-producthunt_research_topic({ query: "AI coding agent", limit: 5 })
-producthunt_topic_watchlist({ query: "AI coding agent", limit: 5 })
-producthunt_research_product_cards({ query: "AI coding agent", limit: 5 })
-producthunt_digest({ date: "2026-06-01", limit: 10 })
+producthunt_research_topic({ query: "AI coding agent", limit: 5, searchPool: 20, commentsPerPost: 3 })
+producthunt_topic_watchlist({ query: "AI coding agent", limit: 5, searchPool: 20 })
+producthunt_research_product_cards({ query: "AI coding agent", limit: 5, searchPool: 20 })
+producthunt_digest({ limit: 10, commentsPerPost: 3 })
 ```
 
 ## Related docs
