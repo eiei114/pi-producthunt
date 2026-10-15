@@ -6,6 +6,8 @@ This project follows semantic versioning.
 
 ## Unreleased
 
+- Pin the Pi SDK development dependencies to 1.2.0 and verify the extension in the actual Pi RPC host.
+
 ## [0.3.10] - 2026-09-30
 
 ### Changed
