@@ -1,5 +1,5 @@
 import type { CommentSummary, PostListItem, ResearchTopicResult, WatchlistEntry } from "./types.ts";
-import { commentSignalWeight, summarizeCommentSignalLabel } from "./comment-signals.ts";
+import { analyzeCommentSignals } from "./comment-signals.ts";
 import { formatLaunchTiming } from "./launch-timing.ts";
 import { truncateSingleLine } from "./text.ts";
 import { displayProductHuntUrl } from "./urls.ts";
@@ -16,31 +16,36 @@ export function deriveWatchlistEntries(
   if (!result.posts.length) return [];
 
   const ranked = [...result.posts]
-    .map((post) => ({ post, score: scorePost(post) }))
+    .map((post) => {
+      const commentSignals = analyzeCommentSignals(post.comments ?? []);
+      return {
+        post,
+        score: scorePost(post, commentSignals.weight),
+        commentSignalLabel: commentSignals.label,
+      };
+    })
     .sort((a, b) => b.score - a.score)
     .slice(0, Math.max(0, maxEntries));
 
-  return ranked.map(({ post }) => ({
+  return ranked.map(({ post, commentSignalLabel }) => ({
     name: post.name,
     slug: post.slug,
-    whyPromising: buildWhyPromising(post),
+    whyPromising: buildWhyPromising(post, commentSignalLabel),
     launchTiming: formatLaunchTiming(post),
     nextUrl: displayProductHuntUrl(post.url, post.slug),
   }));
 }
 
-function scorePost(post: ScoredPost): number {
+function scorePost(post: ScoredPost, signalWeight: number): number {
   const votes = post.votesCount ?? 0;
   const comments = post.commentsCount ?? 0;
   const commentSignals = post.comments?.length ?? 0;
-  const signalBonus = (post.comments ?? []).reduce((sum, comment) => sum + commentSignalWeight(comment), 0);
-  return votes + comments * 3 + commentSignals * 2 + signalBonus;
+  return votes + comments * 3 + commentSignals * 2 + signalWeight;
 }
 
-function buildWhyPromising(post: ScoredPost): string {
+function buildWhyPromising(post: ScoredPost, signals: string): string {
   const votes = post.votesCount ?? 0;
   const comments = post.commentsCount ?? 0;
-  const signals = summarizeCommentSignalLabel(post.comments ?? []);
 
   const parts: string[] = [];
   if (votes > 0 || comments > 0) {

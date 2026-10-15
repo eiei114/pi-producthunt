@@ -32,6 +32,41 @@ export function classifyComments(comments: CommentSummary[]): CommentSignalKind 
   return best;
 }
 
+export function analyzeCommentSignals(comments: CommentSummary[]): {
+  kind: CommentSignalKind;
+  weight: number;
+  label: string;
+} {
+  let kind: CommentSignalKind = "none";
+  let weight = 0;
+
+  for (const comment of comments) {
+    const commentKind = classifyCommentText(stripHtml(comment.body).toLowerCase());
+    switch (commentKind) {
+      case "pricing":
+        kind = "pricing";
+        weight += 4;
+        break;
+      case "positive":
+        if (kind !== "pricing") kind = "positive";
+        weight += 2;
+        break;
+      case "question":
+        if (kind === "none") kind = "question";
+        weight += 1;
+        break;
+    }
+  }
+
+  return {
+    kind,
+    weight,
+    label: kind === "none"
+      ? comments.length ? "comment thread worth sampling" : ""
+      : COMMENT_SIGNAL_LABELS[kind],
+  };
+}
+
 export function commentSignalWeight(comment: CommentSummary): number {
   const kind = classifyCommentText(stripHtml(comment.body).toLowerCase());
   switch (kind) {
