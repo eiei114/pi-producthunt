@@ -18,7 +18,7 @@ Merging a package version bump does not create a tag, release, or npm publicatio
 The release workflow is manually dispatched, and publication is a separate action.
 
 1. After release approval, run **Manual Release** from the `main` branch. It creates a `v<version>` tag and GitHub Release if the tag does not already exist.
-2. Separately run **Publish to npm** with `ref` set to that tag (for example, `v0.3.11`). Publishing is started only by this explicit dispatch; publishing a GitHub Release does not trigger npm publication.
+2. Separately run **Publish to npm** with `ref` set to that tag (for example, `v0.3.12`). Publishing is started only by this explicit dispatch; publishing a GitHub Release does not trigger npm publication.
 
 The publish workflow runs CI and skips `name@version` if that exact package version already exists on npm.
 

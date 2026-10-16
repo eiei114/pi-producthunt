@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -80,10 +81,18 @@ test("CHANGELOG unreleased bump targets stay ahead of package.json version", () 
 });
 
 test("CHANGELOG documents shipped patch releases below package.json version", () => {
-  const [major, minor, patch] = packageJson.version.split(".").map(Number);
+  const [major, minor] = packageJson.version.split(".").map(Number);
+  const releasedVersions = execFileSync(
+    "git",
+    ["tag", "--list", `v${major}.${minor}.*`],
+    { encoding: "utf8" },
+  )
+    .split(/\r?\n/)
+    .filter((tag) => /^v\d+\.\d+\.\d+$/.test(tag))
+    .map((tag) => tag.slice(1))
+    .filter((version) => compareSemver(version, packageJson.version) < 0);
 
-  for (let patchVersion = 0; patchVersion < patch; patchVersion += 1) {
-    const version = `${major}.${minor}.${patchVersion}`;
+  for (const version of releasedVersions) {
     assert.match(
       changelog,
       new RegExp(`## \\[${version.replace(/\./g, "\\.")}\\]`),
