@@ -1,13 +1,11 @@
 name: Publish to npm
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       ref:
-        description: 'Git ref to publish (defaults to selected ref)'
-        required: false
+        description: 'Release tag to publish (must match package.json version, e.g. v1.2.3)'
+        required: true
         type: string
 
 permissions:
@@ -15,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: npm-publish-${{ github.event.inputs.ref || github.ref }}
+  group: npm-publish-${{ github.event.inputs.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -27,8 +25,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.inputs.ref || github.ref }}
+          ref: refs/tags/${{ github.event.inputs.ref }}
           persist-credentials: false
+
+      - name: Verify release tag matches package version and exists
+        env:
+          RELEASE_REF: ${{ github.event.inputs.ref }}
+        shell: bash
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          if [[ "$RELEASE_REF" != "v${PACKAGE_VERSION}" ]]; then
+            echo "Release ref $RELEASE_REF does not match package version $PACKAGE_VERSION." >&2
+            exit 1
+          fi
+
+          TAG_REF="refs/tags/${RELEASE_REF}"
+          if ! git ls-remote --exit-code --refs origin "$TAG_REF" >/dev/null; then
+            echo "Release tag $TAG_REF does not exist on origin." >&2
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v7

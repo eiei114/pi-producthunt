@@ -3,7 +3,7 @@
  * Read-only release pipeline investigation checks.
  *
  * - Verifies npm registry state for the current package version (no publish)
- * - Verifies release and publish actions require explicit workflow/release events
+ * - Validates release workflows require separate explicit dispatches
  * - Ensures publish/auto-release workflow files are present
  * - Runs npm pack --dry-run as a non-publish release artifact check
  */
@@ -69,32 +69,57 @@ if (npmVersion) {
 }
 
 const autoRelease = readFileSync(autoReleasePath, "utf8");
-const publish = readFileSync(publishPath, "utf8");
 if (/\$\{\{\s*secrets\.GITHUB_TOKEN\s*\}\}\\n/.test(autoRelease)) {
   fail(
-    "auto-release.yml contains a corrupted GH_TOKEN value (`${{ secrets.GITHUB_TOKEN }}\\n`)",
+    "auto-release.yml contains a corrupted GH_TOKEN value (`${{ secrets.GITHUB_TOKEN }}\\n`); this breaks `gh workflow run` with HTTP 401",
   );
 }
 ok("auto-release.yml GH_TOKEN formatting looks valid");
 
-if (!/^  workflow_dispatch:\s*$/m.test(autoRelease) || /^  push:\s*$/m.test(autoRelease)) {
-  fail("auto-release.yml must be manually dispatched and must not run on pushes");
-}
-if (!/if: github\.ref == 'refs\/heads\/main'/.test(autoRelease)) {
-  fail("auto-release.yml must restrict release creation to main");
-}
-if (!/gh release create/.test(autoRelease) || /gh workflow run publish\.yml/.test(autoRelease)) {
-  fail("auto-release.yml must create a release without dispatching npm publication");
-}
-ok("release creation is an explicit main-branch workflow dispatch");
+function assertManualDispatchOnly(workflow, filename) {
+  const lines = workflow.split(/\r?\n/);
+  const onIndex = lines.findIndex((line) => line === "on:");
+  if (onIndex < 0) {
+    fail(`${filename} is missing its event configuration`);
+  }
 
-if (/^  push:\s*$/m.test(publish)) {
-  fail("publish.yml must not run from merge or tag pushes");
+  const triggerNames = [];
+  for (const line of lines.slice(onIndex + 1)) {
+    if (line.trim() === "") continue;
+    if (!/^\s/.test(line) && /^[A-Za-z0-9_-]+:/.test(line)) break;
+    const match = line.match(/^  ([A-Za-z0-9_-]+):/);
+    if (match) triggerNames.push(match[1]);
+  }
+
+  if (triggerNames.length !== 1 || triggerNames[0] !== "workflow_dispatch") {
+    fail(`${filename} must trigger only through workflow_dispatch (found: ${triggerNames.join(", ")})`);
+  }
+  ok(`${filename} requires an explicit workflow_dispatch`);
 }
-if (!/^  release:\s*$/m.test(publish) || !/^  workflow_dispatch:\s*$/m.test(publish)) {
-  fail("publish.yml must retain release and explicit workflow_dispatch triggers");
+
+assertManualDispatchOnly(autoRelease, "auto-release.yml");
+const publish = readFileSync(publishPath, "utf8");
+assertManualDispatchOnly(publish, "publish.yml");
+
+if (/gh workflow run publish\.yml/.test(autoRelease)) {
+  fail("auto-release.yml must not dispatch publish.yml; publishing requires separate authorization");
 }
-ok("npm publication is separate from merge pushes");
+ok("release creation does not authorize npm publishing");
+
+if (!/^        required: true$/m.test(publish)) {
+  fail("publish.yml must require an explicit release tag input");
+}
+if (!/^          ref: refs\/tags\/\$\{\{ github\.event\.inputs\.ref \}\}$/m.test(publish)) {
+  fail("publish.yml must check out the explicitly qualified release tag");
+}
+if (!/"\$RELEASE_REF" != "v\$\{PACKAGE_VERSION\}"/.test(publish)) {
+  fail("publish.yml must verify the selected tag matches package.json");
+}
+if (!/TAG_REF="refs\/tags\/\$\{RELEASE_REF\}"/.test(publish) ||
+    !/git ls-remote --exit-code --refs origin "\$TAG_REF"/.test(publish)) {
+  fail("publish.yml must verify that the selected release tag exists on origin");
+}
+ok("publish.yml requires an existing, tag-qualified ref matching the package version");
 
 if (!/id-token:\s*write/.test(publish)) {
   fail("publish.yml is missing id-token: write for Trusted Publishing");

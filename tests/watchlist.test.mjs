@@ -69,6 +69,28 @@ test("formatTopicWatchlist formats multiple ranked entries", () => {
   assert.match(markdown, /commenters ask about pricing/);
 });
 
+test("deriveWatchlistEntries uses comment weights and summary from one signal analysis", () => {
+  const entries = deriveWatchlistEntries({
+    query: "AI",
+    posts: [
+      {
+        ...basePost,
+        slug: "signal-heavy",
+        votesCount: 0,
+        commentsCount: 0,
+        comments: [
+          { id: "c1", body: "What is the pricing?", user: { name: "User" } },
+          { id: "c2", body: "Great launch", user: { name: "User" } },
+        ],
+      },
+      { ...basePost, slug: "vote-heavy", votesCount: 9, commentsCount: 0 },
+    ],
+  });
+
+  assert.equal(entries[0].slug, "signal-heavy");
+  assert.match(entries[0].whyPromising, /commenters ask about pricing/);
+});
+
 test("deriveWatchlistEntries caps output to five entries", () => {
   const posts = Array.from({ length: 7 }, (_, index) => ({
     ...basePost,

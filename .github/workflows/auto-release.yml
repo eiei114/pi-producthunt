@@ -1,4 +1,4 @@
-name: Manual Release
+name: Auto Release
 
 on:
   workflow_dispatch:
@@ -9,15 +9,21 @@ permissions:
 jobs:
   release:
     if: github.ref == 'refs/heads/main'
-    name: Create release from main
+    name: Create release for new version
     runs-on: ubuntu-latest
     steps:
+      - name: Require main branch
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "Auto release must be dispatched from main." >&2
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Check for existing version tag
+      - name: Check for an unreleased version
         id: check
         shell: bash
         run: |
@@ -30,7 +36,7 @@ jobs:
             exit 0
           fi
 
-          echo "Manual release authorized for ${CURRENT_VERSION}."
+          echo "Unreleased version ${CURRENT_VERSION} explicitly selected for release."
           echo "released=true" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 

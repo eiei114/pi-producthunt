@@ -134,7 +134,7 @@ test("package version merges do not trigger release or npm publication", () => {
   assert.doesNotMatch(autoReleaseWorkflow, /gh workflow run publish\.yml/);
 
   assert.doesNotMatch(publishWorkflow, /^  push:\s*$/m);
-  assert.match(publishWorkflow, /^  release:\s*$/m);
+  assert.doesNotMatch(publishWorkflow, /^  release:\s*$/m);
   assert.match(publishWorkflow, /^  workflow_dispatch:\s*$/m);
 });
 
