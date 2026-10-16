@@ -85,7 +85,8 @@ function assertManualDispatchOnly(workflow, filename) {
 
   const triggerNames = [];
   for (const line of lines.slice(onIndex + 1)) {
-    if (line.trim() === "") break;
+    if (line.trim() === "") continue;
+    if (!/^\s/.test(line) && /^[A-Za-z0-9_-]+:/.test(line)) break;
     const match = line.match(/^  ([A-Za-z0-9_-]+):/);
     if (match) triggerNames.push(match[1]);
   }
@@ -108,10 +109,17 @@ ok("release creation does not authorize npm publishing");
 if (!/^        required: true$/m.test(publish)) {
   fail("publish.yml must require an explicit release tag input");
 }
+if (!/^          ref: refs\/tags\/\$\{\{ github\.event\.inputs\.ref \}\}$/m.test(publish)) {
+  fail("publish.yml must check out the explicitly qualified release tag");
+}
 if (!/"\$RELEASE_REF" != "v\$\{PACKAGE_VERSION\}"/.test(publish)) {
   fail("publish.yml must verify the selected tag matches package.json");
 }
-ok("publish.yml requires a tag matching the package version");
+if (!/TAG_REF="refs\/tags\/\$\{RELEASE_REF\}"/.test(publish) ||
+    !/git ls-remote --exit-code --refs origin "\$TAG_REF"/.test(publish)) {
+  fail("publish.yml must verify that the selected release tag exists on origin");
+}
+ok("publish.yml requires an existing, tag-qualified ref matching the package version");
 
 if (!/id-token:\s*write/.test(publish)) {
   fail("publish.yml is missing id-token: write for Trusted Publishing");
