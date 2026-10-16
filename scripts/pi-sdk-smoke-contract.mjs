@@ -1,3 +1,5 @@
+import { resolve } from "node:path";
+
 export const VERIFICATION_CONTRACT = "pi-sdk-behavior-v2";
 export const SDK_NAMES = [
   "@earendil-works/pi-agent-core",
@@ -8,6 +10,18 @@ export const SDK_NAMES = [
 
 export const UNHANDLED_ERROR_PATTERN = /UnhandledPromiseRejection|uncaught exception|shutdown error/i;
 export const EXTENSION_LOAD_ERROR_PATTERN = /Failed to load extension|Error loading extension/i;
+
+export function registerStdinErrorHandler(stdin) {
+  stdin.on("error", () => {
+    // Process close state and failed RPC assertions retain the useful diagnostics.
+  });
+}
+
+export function smokeReportPath(root, agentDir, persistReport) {
+  return persistReport
+    ? resolve(root, "docs/verification/pi-sdk-smoke.json")
+    : resolve(agentDir, "pi-sdk-smoke.json");
+}
 
 export function createSmokeEnvironment(baseEnvironment, agentDir) {
   const env = {

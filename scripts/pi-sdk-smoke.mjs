@@ -7,13 +7,14 @@ import {
   behaviorAssertions,
   createSmokeEnvironment,
   EXTENSION_LOAD_ERROR_PATTERN,
+  registerStdinErrorHandler,
   SDK_NAMES,
+  smokeReportPath,
   UNHANDLED_ERROR_PATTERN,
   VERIFICATION_CONTRACT,
 } from "./pi-sdk-smoke-contract.mjs";
 
 const root = resolve(import.meta.dirname, "..");
-const reportPath = resolve(root, "docs/verification/pi-sdk-smoke.json");
 const timeoutMs = 15_000;
 const cleanupGraceMs = 1_000;
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
@@ -33,6 +34,11 @@ const piPackagePath = resolve(root, "node_modules/@earendil-works/pi-coding-agen
 const piManifest = readJson(piPackagePath);
 const piCli = resolve(dirname(piPackagePath), piManifest.bin.pi);
 const agentDir = mkdtempSync(join(tmpdir(), "pi-producthunt-sdk-smoke-"));
+const reportPath = smokeReportPath(
+  root,
+  agentDir,
+  process.env.PI_SDK_SMOKE_PERSIST_REPORT === "1",
+);
 const env = createSmokeEnvironment(process.env, agentDir);
 
 const rpcArgs = [
@@ -76,6 +82,7 @@ function createRpcProcess() {
     signal: null,
     spawnError: null,
   };
+  registerStdinErrorHandler(child.stdin);
 
   child.stdout.on("data", (chunk) => {
     const decoded = state.decoder.write(chunk);
@@ -403,6 +410,7 @@ try {
     cases: cases.map(({ name, passed, exit_code }) => ({ name, passed, exit_code })),
     unhandled_errors: report.unhandled_errors,
     extension_load_errors: report.extension_load_errors,
+    report_persisted: process.env.PI_SDK_SMOKE_PERSIST_REPORT === "1",
   }));
   if (cases.some((item) => !item.passed)) process.exitCode = 1;
 } finally {

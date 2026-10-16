@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
+import { PassThrough } from "node:stream";
 import test from "node:test";
-import { behaviorAssertions, createSmokeEnvironment, VERIFICATION_CONTRACT } from "../scripts/pi-sdk-smoke-contract.mjs";
+import {
+  behaviorAssertions,
+  createSmokeEnvironment,
+  registerStdinErrorHandler,
+  smokeReportPath,
+  VERIFICATION_CONTRACT,
+} from "../scripts/pi-sdk-smoke-contract.mjs";
+import { join, resolve } from "node:path";
 
 const inventory = {
   type: "response",
@@ -68,6 +76,27 @@ function digestSelectFixtures() {
 
 test("Pi SDK smoke uses the shared behavioral-v2 contract", () => {
   assert.equal(VERIFICATION_CONTRACT, "pi-sdk-behavior-v2");
+});
+
+test("early Pi exit EPIPE is handled by the RPC stdin listener", () => {
+  const stdin = new PassThrough();
+  registerStdinErrorHandler(stdin);
+
+  assert.doesNotThrow(() => {
+    stdin.emit("error", Object.assign(new Error("write EPIPE"), { code: "EPIPE" }));
+  });
+  stdin.destroy();
+});
+
+test("smoke report persistence is opt-in", () => {
+  const root = resolve("pi-producthunt-repo");
+  const agentDir = resolve("pi-producthunt-smoke-temp");
+
+  assert.equal(smokeReportPath(root, agentDir, false), join(agentDir, "pi-sdk-smoke.json"));
+  assert.equal(
+    smokeReportPath(root, agentDir, true),
+    join(root, "docs", "verification", "pi-sdk-smoke.json"),
+  );
 });
 
 test("Pi smoke isolates both agent directories and never inherits a Product Hunt token", () => {

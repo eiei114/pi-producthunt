@@ -3,7 +3,7 @@
  * Read-only release pipeline investigation checks.
  *
  * - Verifies npm registry state for the current package version (no publish)
- * - Validates auto-release workflow token/env formatting
+ * - Verifies release and publish actions require explicit workflow/release events
  * - Ensures publish/auto-release workflow files are present
  * - Runs npm pack --dry-run as a non-publish release artifact check
  */
@@ -69,19 +69,34 @@ if (npmVersion) {
 }
 
 const autoRelease = readFileSync(autoReleasePath, "utf8");
+const publish = readFileSync(publishPath, "utf8");
 if (/\$\{\{\s*secrets\.GITHUB_TOKEN\s*\}\}\\n/.test(autoRelease)) {
   fail(
-    "auto-release.yml contains a corrupted GH_TOKEN value (`${{ secrets.GITHUB_TOKEN }}\\n`); this breaks `gh workflow run` with HTTP 401",
+    "auto-release.yml contains a corrupted GH_TOKEN value (`${{ secrets.GITHUB_TOKEN }}\\n`)",
   );
 }
 ok("auto-release.yml GH_TOKEN formatting looks valid");
 
-if (!/gh workflow run publish\.yml/.test(autoRelease)) {
-  fail("auto-release.yml no longer dispatches publish.yml; update investigation expectations");
+if (!/^  workflow_dispatch:\s*$/m.test(autoRelease) || /^  push:\s*$/m.test(autoRelease)) {
+  fail("auto-release.yml must be manually dispatched and must not run on pushes");
 }
-ok("auto-release.yml still dispatches publish.yml");
+if (!/if: github\.ref == 'refs\/heads\/main'/.test(autoRelease)) {
+  fail("auto-release.yml must restrict release creation to main");
+}
+if (!/gh release create/.test(autoRelease) || /gh workflow run publish\.yml/.test(autoRelease)) {
+  fail("auto-release.yml must create a release without dispatching npm publication");
+}
+ok("release creation is an explicit main-branch workflow dispatch");
 
-if (!/id-token:\s*write/.test(readFileSync(publishPath, "utf8"))) {
+if (/^  push:\s*$/m.test(publish)) {
+  fail("publish.yml must not run from merge or tag pushes");
+}
+if (!/^  release:\s*$/m.test(publish) || !/^  workflow_dispatch:\s*$/m.test(publish)) {
+  fail("publish.yml must retain release and explicit workflow_dispatch triggers");
+}
+ok("npm publication is separate from merge pushes");
+
+if (!/id-token:\s*write/.test(publish)) {
   fail("publish.yml is missing id-token: write for Trusted Publishing");
 }
 ok("publish.yml retains Trusted Publishing permission");

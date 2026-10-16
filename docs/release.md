@@ -12,24 +12,20 @@ On npmjs.com, configure Trusted Publishing for this package:
 - Repository: this GitHub repository
 - Workflow filename: `publish.yml`
 
-## Publish
+## Release and publish
 
-```bash
-npm version patch
-git push
-```
+Merging a package version bump does not create a tag, release, or npm publication.
+The release workflow is manually dispatched, and publication is a separate action.
 
-On `main`, `.github/workflows/auto-release.yml` checks `package.json` version. If `v<version>` does not exist yet, it creates the tag, creates the GitHub Release, then explicitly dispatches `.github/workflows/publish.yml` for that tag.
+1. After release approval, run **Manual Release** from the `main` branch. It creates a `v<version>` tag and GitHub Release if the tag does not already exist.
+2. Separately run **Publish to npm** with `ref` set to that tag (for example, `v0.3.11`). A GitHub Release published outside this workflow may also trigger the publisher.
 
-The `v*.*.*` tag also triggers `.github/workflows/publish.yml`, which runs CI and publishes to npm when tags are pushed manually.
-Publishing also runs when a GitHub Release is published, and can be run manually from GitHub Actions with `workflow_dispatch`.
-
-The workflow skips `name@version` if that exact package version already exists on npm.
+The publish workflow runs CI and skips `name@version` if that exact package version already exists on npm.
 
 ## GitHub Actions requirements
 
 - `permissions: id-token: write`
-- `permissions: actions: write` on auto-release so it can dispatch `publish.yml`
+- `permissions: contents: write` on Manual Release so it can create a tag and GitHub Release
 - GitHub-hosted runner
 - Node.js 24, so the release job uses a current npm CLI for Trusted Publishing
 - No `NPM_TOKEN`

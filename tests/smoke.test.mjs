@@ -8,6 +8,10 @@ const autoReleaseWorkflow = await readFile(
   new URL("../.github/workflows/auto-release.yml", import.meta.url),
   "utf8",
 );
+const publishWorkflow = await readFile(
+  new URL("../.github/workflows/publish.yml", import.meta.url),
+  "utf8",
+);
 const examplesDoc = await readFile(new URL("../docs/examples.md", import.meta.url), "utf8");
 const releaseDoc = await readFile(new URL("../docs/release.md", import.meta.url), "utf8");
 const changelog = await readFile(new URL("../CHANGELOG.md", import.meta.url), "utf8");
@@ -120,6 +124,18 @@ test("auto-release workflow GH_TOKEN values are not corrupted with literal \\n",
     false,
     "auto-release.yml must not embed a corrupted GH_TOKEN value with trailing \\n",
   );
+});
+
+test("package version merges do not trigger release or npm publication", () => {
+  assert.match(autoReleaseWorkflow, /^  workflow_dispatch:\s*$/m);
+  assert.doesNotMatch(autoReleaseWorkflow, /^  push:\s*$/m);
+  assert.match(autoReleaseWorkflow, /if: github\.ref == 'refs\/heads\/main'/);
+  assert.match(autoReleaseWorkflow, /gh release create/);
+  assert.doesNotMatch(autoReleaseWorkflow, /gh workflow run publish\.yml/);
+
+  assert.doesNotMatch(publishWorkflow, /^  push:\s*$/m);
+  assert.match(publishWorkflow, /^  release:\s*$/m);
+  assert.match(publishWorkflow, /^  workflow_dispatch:\s*$/m);
 });
 
 test("README version pin example matches package.json version", () => {
