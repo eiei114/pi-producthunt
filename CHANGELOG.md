@@ -6,6 +6,10 @@ This project follows semantic versioning.
 
 ## Unreleased
 
+### Changed
+
+- Avoid reprocessing comment text while ranking and summarizing watchlist entries.
+
 ## [0.3.10] - 2026-09-30
 
 ### Changed

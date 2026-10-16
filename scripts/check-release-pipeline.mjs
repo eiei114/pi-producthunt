@@ -3,7 +3,7 @@
  * Read-only release pipeline investigation checks.
  *
  * - Verifies npm registry state for the current package version (no publish)
- * - Validates auto-release workflow token/env formatting
+ * - Validates release workflows require separate explicit dispatches
  * - Ensures publish/auto-release workflow files are present
  * - Runs npm pack --dry-run as a non-publish release artifact check
  */
@@ -76,12 +76,52 @@ if (/\$\{\{\s*secrets\.GITHUB_TOKEN\s*\}\}\\n/.test(autoRelease)) {
 }
 ok("auto-release.yml GH_TOKEN formatting looks valid");
 
-if (!/gh workflow run publish\.yml/.test(autoRelease)) {
-  fail("auto-release.yml no longer dispatches publish.yml; update investigation expectations");
-}
-ok("auto-release.yml still dispatches publish.yml");
+function assertManualDispatchOnly(workflow, filename) {
+  const lines = workflow.split(/\r?\n/);
+  const onIndex = lines.findIndex((line) => line === "on:");
+  if (onIndex < 0) {
+    fail(`${filename} is missing its event configuration`);
+  }
 
-if (!/id-token:\s*write/.test(readFileSync(publishPath, "utf8"))) {
+  const triggerNames = [];
+  for (const line of lines.slice(onIndex + 1)) {
+    if (line.trim() === "") continue;
+    if (!/^\s/.test(line) && /^[A-Za-z0-9_-]+:/.test(line)) break;
+    const match = line.match(/^  ([A-Za-z0-9_-]+):/);
+    if (match) triggerNames.push(match[1]);
+  }
+
+  if (triggerNames.length !== 1 || triggerNames[0] !== "workflow_dispatch") {
+    fail(`${filename} must trigger only through workflow_dispatch (found: ${triggerNames.join(", ")})`);
+  }
+  ok(`${filename} requires an explicit workflow_dispatch`);
+}
+
+assertManualDispatchOnly(autoRelease, "auto-release.yml");
+const publish = readFileSync(publishPath, "utf8");
+assertManualDispatchOnly(publish, "publish.yml");
+
+if (/gh workflow run publish\.yml/.test(autoRelease)) {
+  fail("auto-release.yml must not dispatch publish.yml; publishing requires separate authorization");
+}
+ok("release creation does not authorize npm publishing");
+
+if (!/^        required: true$/m.test(publish)) {
+  fail("publish.yml must require an explicit release tag input");
+}
+if (!/^          ref: refs\/tags\/\$\{\{ github\.event\.inputs\.ref \}\}$/m.test(publish)) {
+  fail("publish.yml must check out the explicitly qualified release tag");
+}
+if (!/"\$RELEASE_REF" != "v\$\{PACKAGE_VERSION\}"/.test(publish)) {
+  fail("publish.yml must verify the selected tag matches package.json");
+}
+if (!/TAG_REF="refs\/tags\/\$\{RELEASE_REF\}"/.test(publish) ||
+    !/git ls-remote --exit-code --refs origin "\$TAG_REF"/.test(publish)) {
+  fail("publish.yml must verify that the selected release tag exists on origin");
+}
+ok("publish.yml requires an existing, tag-qualified ref matching the package version");
+
+if (!/id-token:\s*write/.test(publish)) {
   fail("publish.yml is missing id-token: write for Trusted Publishing");
 }
 ok("publish.yml retains Trusted Publishing permission");
