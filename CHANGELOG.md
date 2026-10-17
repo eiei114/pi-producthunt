@@ -9,6 +9,7 @@ This project follows semantic versioning.
 ### Changed
 
 - Avoid reprocessing comment text while ranking and summarizing watchlist entries.
+- Pin the Pi SDK development dependencies to 1.2.0 and verify the extension in the actual Pi RPC host.
 
 ## [0.3.10] - 2026-09-30
 

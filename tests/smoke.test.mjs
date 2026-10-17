@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -6,6 +7,10 @@ const packageJson = JSON.parse(await readFile(new URL("../package.json", import.
 const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
 const autoReleaseWorkflow = await readFile(
   new URL("../.github/workflows/auto-release.yml", import.meta.url),
+  "utf8",
+);
+const publishWorkflow = await readFile(
+  new URL("../.github/workflows/publish.yml", import.meta.url),
   "utf8",
 );
 const examplesDoc = await readFile(new URL("../docs/examples.md", import.meta.url), "utf8");
@@ -76,10 +81,18 @@ test("CHANGELOG unreleased bump targets stay ahead of package.json version", () 
 });
 
 test("CHANGELOG documents shipped patch releases below package.json version", () => {
-  const [major, minor, patch] = packageJson.version.split(".").map(Number);
+  const [major, minor] = packageJson.version.split(".").map(Number);
+  const releasedVersions = execFileSync(
+    "git",
+    ["tag", "--list", `v${major}.${minor}.*`],
+    { encoding: "utf8" },
+  )
+    .split(/\r?\n/)
+    .filter((tag) => /^v\d+\.\d+\.\d+$/.test(tag))
+    .map((tag) => tag.slice(1))
+    .filter((version) => compareSemver(version, packageJson.version) < 0);
 
-  for (let patchVersion = 0; patchVersion < patch; patchVersion += 1) {
-    const version = `${major}.${minor}.${patchVersion}`;
+  for (const version of releasedVersions) {
     assert.match(
       changelog,
       new RegExp(`## \\[${version.replace(/\./g, "\\.")}\\]`),
@@ -120,6 +133,18 @@ test("auto-release workflow GH_TOKEN values are not corrupted with literal \\n",
     false,
     "auto-release.yml must not embed a corrupted GH_TOKEN value with trailing \\n",
   );
+});
+
+test("package version merges do not trigger release or npm publication", () => {
+  assert.match(autoReleaseWorkflow, /^  workflow_dispatch:\s*$/m);
+  assert.doesNotMatch(autoReleaseWorkflow, /^  push:\s*$/m);
+  assert.match(autoReleaseWorkflow, /if: github\.ref == 'refs\/heads\/main'/);
+  assert.match(autoReleaseWorkflow, /gh release create/);
+  assert.doesNotMatch(autoReleaseWorkflow, /gh workflow run publish\.yml/);
+
+  assert.doesNotMatch(publishWorkflow, /^  push:\s*$/m);
+  assert.doesNotMatch(publishWorkflow, /^  release:\s*$/m);
+  assert.match(publishWorkflow, /^  workflow_dispatch:\s*$/m);
 });
 
 test("README version pin example matches package.json version", () => {

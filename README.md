@@ -39,7 +39,7 @@ pi install npm:pi-producthunt
 Pin a specific version when you want reproducible installs:
 
 ```bash
-pi install npm:pi-producthunt@0.3.11
+pi install npm:pi-producthunt@0.3.12
 ```
 
 Install into the current project instead of your user Pi settings:
@@ -223,6 +223,7 @@ npm run ci
 
 - TypeScript typecheck
 - Node tests
+- Actual Pi SDK 1.2.0 extension/RPC smoke checks
 - `npm pack --dry-run`
 
 ## Release
