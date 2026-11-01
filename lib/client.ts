@@ -74,6 +74,8 @@ export interface ProductHuntClientOptions {
   token?: string;
 }
 
+const COMMENT_REQUEST_CONCURRENCY = 4;
+
 export async function getViewer(options: ProductHuntClientOptions = {}): Promise<ViewerResult> {
   const result = await executeProductHuntGraphQL<{ viewer?: { user?: { username?: string } | null } | null }>(
     viewerQuery,
@@ -198,13 +200,19 @@ export async function researchTopic(
   const commentsPerPost = clampLimit(params.commentsPerPost, 3, 10);
   const enriched: ResearchTopicResult["posts"] = [];
 
-  for (const post of posts.posts) {
-    try {
-      const comments = await getPostComments({ ref: post.slug, limit: commentsPerPost }, options);
-      enriched.push({ ...post, comments: comments.comments });
-    } catch {
-      enriched.push(post);
-    }
+  for (let start = 0; start < posts.posts.length; start += COMMENT_REQUEST_CONCURRENCY) {
+    const batch = posts.posts.slice(start, start + COMMENT_REQUEST_CONCURRENCY);
+    const results = await Promise.all(
+      batch.map(async (post) => {
+        try {
+          const comments = await getPostComments({ ref: post.slug, limit: commentsPerPost }, options);
+          return { ...post, comments: comments.comments };
+        } catch {
+          return post;
+        }
+      }),
+    );
+    enriched.push(...results);
   }
 
   return { query: params.query, posts: enriched, rateLimit: posts.rateLimit };
