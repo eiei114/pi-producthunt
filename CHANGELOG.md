@@ -8,6 +8,12 @@ This project follows semantic versioning.
 
 ### Changed
 
+- Fetch topic-research comments in batches of four to reduce serial API wait time while preserving result order and per-post fallbacks.
+
+## [0.3.12] - 2026-10-17
+
+### Changed
+
 - Avoid reprocessing comment text while ranking and summarizing watchlist entries.
 - Pin the Pi SDK development dependencies to 1.2.0 and verify the extension in the actual Pi RPC host.
 
