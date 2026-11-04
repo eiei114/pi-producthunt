@@ -6,6 +6,18 @@ This project follows semantic versioning.
 
 ## Unreleased
 
+## [0.3.14] - 2026-11-05
+
+### Changed
+
+- Collapse the set-level comment-signal helpers (`analyzeCommentSignals`, `classifyComments`, `summarizeCommentSignalLabel`) onto one shared normalization and priority pass, and have the single-comment `commentSignalWeight` helper reuse the same normalizer and classifier instead of its own duplicated switch.
+
+### Fixed
+
+- Document the shipped 0.3.13 release, which had a matching git tag but no CHANGELOG section.
+
+## [0.3.13] - 2026-11-02
+
 ### Changed
 
 - Fetch topic-research comments in batches of four to reduce serial API wait time while preserving result order and per-post fallbacks.

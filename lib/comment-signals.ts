@@ -9,9 +9,24 @@ export const COMMENT_SIGNAL_LABELS = {
 
 export type CommentSignalKind = keyof typeof COMMENT_SIGNAL_LABELS | "none";
 
+const FALLBACK_SIGNAL_LABEL = "comment thread worth sampling";
+
+const SIGNAL_WEIGHTS: Record<CommentSignalKind, number> = {
+  pricing: 4,
+  positive: 2,
+  question: 1,
+  none: 0,
+};
+
 const PRICING_PATTERN = /\b(pricing|price|cost|subscription|plan)s?\b/;
 const POSITIVE_PATTERN = /\b(love|great|awesome|interested|need this|useful)\b/;
 const QUESTION_PATTERN = /\b(question|how|when|support)\b|\?/;
+
+interface CommentSignalAnalysis {
+  kind: CommentSignalKind;
+  weight: number;
+  hasComments: boolean;
+}
 
 export function classifyCommentText(text: string): CommentSignalKind {
   if (!text) return "none";
@@ -22,14 +37,7 @@ export function classifyCommentText(text: string): CommentSignalKind {
 }
 
 export function classifyComments(comments: CommentSummary[]): CommentSignalKind {
-  let best: CommentSignalKind = "none";
-  for (const comment of comments) {
-    const kind = classifyCommentText(stripHtml(comment.body).toLowerCase());
-    if (kind === "pricing") return kind;
-    if (kind === "positive") best = "positive";
-    else if (kind === "question" && best === "none") best = "question";
-  }
-  return best;
+  return analyzeComments(comments).kind;
 }
 
 export function analyzeCommentSignals(comments: CommentSummary[]): {
@@ -37,55 +45,63 @@ export function analyzeCommentSignals(comments: CommentSummary[]): {
   weight: number;
   label: string;
 } {
-  let kind: CommentSignalKind = "none";
-  let weight = 0;
-
-  for (const comment of comments) {
-    const commentKind = classifyCommentText(stripHtml(comment.body).toLowerCase());
-    switch (commentKind) {
-      case "pricing":
-        kind = "pricing";
-        weight += 4;
-        break;
-      case "positive":
-        if (kind !== "pricing") kind = "positive";
-        weight += 2;
-        break;
-      case "question":
-        if (kind === "none") kind = "question";
-        weight += 1;
-        break;
-    }
-  }
-
+  const analysis = analyzeComments(comments);
   return {
-    kind,
-    weight,
-    label: kind === "none"
-      ? comments.length ? "comment thread worth sampling" : ""
-      : COMMENT_SIGNAL_LABELS[kind],
+    kind: analysis.kind,
+    weight: analysis.weight,
+    label: signalLabel(analysis.kind, analysis.hasComments),
   };
 }
 
 export function commentSignalWeight(comment: CommentSummary): number {
-  const kind = classifyCommentText(stripHtml(comment.body).toLowerCase());
-  switch (kind) {
-    case "pricing":
-      return 4;
-    case "positive":
-      return 2;
-    case "question":
-      return 1;
-    default:
-      return 0;
-  }
+  return SIGNAL_WEIGHTS[classifyCommentText(normalizeCommentBody(comment))];
 }
 
 export function summarizeCommentSignalLabel(
   comments: CommentSummary[],
-  fallback = "comment thread worth sampling",
+  fallback = FALLBACK_SIGNAL_LABEL,
 ): string {
-  const kind = classifyComments(comments);
+  const analysis = analyzeComments(comments);
+  return signalLabel(analysis.kind, analysis.hasComments, fallback);
+}
+
+/**
+ * Single pass over a comment set: normalizes each body once, keeps the same
+ * pricing > positive > question priority, and accumulates the shared weights.
+ */
+function analyzeComments(comments: CommentSummary[]): CommentSignalAnalysis {
+  const analysis: CommentSignalAnalysis = {
+    kind: "none",
+    weight: 0,
+    hasComments: comments.length > 0,
+  };
+
+  for (const comment of comments) {
+    const kind = classifyCommentText(normalizeCommentBody(comment));
+    if (kind === "none") continue;
+
+    analysis.weight += SIGNAL_WEIGHTS[kind];
+    if (kind === "pricing") {
+      analysis.kind = "pricing";
+    } else if (kind === "positive") {
+      if (analysis.kind !== "pricing") analysis.kind = "positive";
+    } else if (analysis.kind === "none") {
+      analysis.kind = "question";
+    }
+  }
+
+  return analysis;
+}
+
+function normalizeCommentBody(comment: CommentSummary): string {
+  return stripHtml(comment.body).toLowerCase();
+}
+
+function signalLabel(
+  kind: CommentSignalKind,
+  hasComments: boolean,
+  fallback = FALLBACK_SIGNAL_LABEL,
+): string {
   if (kind !== "none") return COMMENT_SIGNAL_LABELS[kind];
-  return comments.length ? fallback : "";
+  return hasComments ? fallback : "";
 }
