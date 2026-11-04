@@ -10,7 +10,7 @@ This project follows semantic versioning.
 
 ### Changed
 
-- Collapse the comment-signal helpers onto one normalization and priority pass, so `analyzeCommentSignals`, `classifyComments`, `commentSignalWeight`, and `summarizeCommentSignalLabel` stay in lockstep without re-deriving each comment body.
+- Collapse the set-level comment-signal helpers (`analyzeCommentSignals`, `classifyComments`, `summarizeCommentSignalLabel`) onto one shared normalization and priority pass, and have the single-comment `commentSignalWeight` helper reuse the same normalizer and classifier instead of its own duplicated switch.
 
 ### Fixed
 

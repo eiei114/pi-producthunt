@@ -126,3 +126,21 @@ test("analyzeCommentSignals normalizes HTML escaping like the other seams", () =
   assert.equal(analysis.kind, "pricing");
   assert.equal(analysis.weight, commentSignalWeight(comments[0]));
 });
+
+test("commentSignalWeight classifies one comment through the shared normalizer and classifier", () => {
+  // The set-level helpers share one pass; the single-comment helper is not part
+  // of that pass, but it must still reuse the same normalization and priority
+  // rules, so its weight always agrees with the shared classifier.
+  const cases = [
+    { comment: { id: "c1", body: "  WHAT IS THE PRICING?  ", user: { name: "User" } }, expected: 4 },
+    { comment: { id: "c2", body: "LOVE<br>this launch", user: { name: "User" } }, expected: 2 },
+    { comment: { id: "c3", body: "How does support work?", user: { name: "User" } }, expected: 1 },
+    { comment: { id: "c4", body: "plain update", user: { name: "User" } }, expected: 0 },
+  ];
+
+  for (const { comment, expected } of cases) {
+    assert.equal(commentSignalWeight(comment), expected);
+    // A one-comment set exercises the shared pass on the same body.
+    assert.equal(commentSignalWeight(comment), analyzeCommentSignals([comment]).weight);
+  }
+});
