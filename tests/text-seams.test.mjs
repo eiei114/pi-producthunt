@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 const {
+  COMMENT_SIGNAL_LABELS,
+  analyzeCommentSignals,
   classifyCommentText,
   classifyComments,
   commentSignalWeight,
@@ -66,4 +68,61 @@ test("summarizeCommentSignalLabel uses fallback only when comments exist without
     summarizeCommentSignalLabel([{ id: "c1", body: "Thanks for sharing", user: { name: "User" } }]),
     "comment thread worth sampling",
   );
+});
+
+test("analyzeCommentSignals matches the classify, weight, and label seams", () => {
+  const comments = [
+    { id: "c1", body: "how does support work?", user: { name: "User" } },
+    { id: "c2", body: "love this launch", user: { name: "User" } },
+    { id: "c3", body: "what is the pricing?", user: { name: "User" } },
+    { id: "c4", body: "plain update", user: { name: "User" } },
+  ];
+
+  const analysis = analyzeCommentSignals(comments);
+  assert.equal(analysis.kind, "pricing");
+  assert.equal(analysis.kind, classifyComments(comments));
+  assert.equal(analysis.label, summarizeCommentSignalLabel(comments));
+  assert.equal(analysis.label, COMMENT_SIGNAL_LABELS.pricing);
+  assert.equal(
+    analysis.weight,
+    comments.reduce((total, comment) => total + commentSignalWeight(comment), 0),
+    "aggregate weight must equal the sum of the per-comment weights",
+  );
+  assert.equal(analysis.weight, 7);
+});
+
+test("analyzeCommentSignals keeps priority and weights independent of comment order", () => {
+  const pricey = { id: "c1", body: "Is there a subscription plan?", user: { name: "User" } };
+  const positive = { id: "c2", body: "Need this today", user: { name: "User" } };
+  const question = { id: "c3", body: "When is launch?", user: { name: "User" } };
+
+  const forward = analyzeCommentSignals([pricey, positive, question]);
+  const reversed = analyzeCommentSignals([question, positive, pricey]);
+
+  assert.equal(forward.kind, "pricing");
+  assert.equal(reversed.kind, "pricing");
+  assert.equal(forward.weight, reversed.weight);
+  assert.equal(forward.label, reversed.label);
+});
+
+test("analyzeCommentSignals reports the sampling fallback only for signal-free comments", () => {
+  assert.deepEqual(analyzeCommentSignals([]), {
+    kind: "none",
+    weight: 0,
+    label: "",
+  });
+
+  const neutral = analyzeCommentSignals([{ id: "c1", body: "Thanks for sharing", user: { name: "User" } }]);
+  assert.equal(neutral.kind, "none");
+  assert.equal(neutral.weight, 0);
+  assert.equal(neutral.label, "comment thread worth sampling");
+});
+
+test("analyzeCommentSignals normalizes HTML escaping like the other seams", () => {
+  const comments = [{ id: "c1", body: "Great<br>What is the pricing?", user: { name: "User" } }];
+
+  const analysis = analyzeCommentSignals(comments);
+  assert.equal(analysis.kind, classifyCommentText("great what is the pricing?"));
+  assert.equal(analysis.kind, "pricing");
+  assert.equal(analysis.weight, commentSignalWeight(comments[0]));
 });
