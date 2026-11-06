@@ -6,6 +6,12 @@ This project follows semantic versioning.
 
 ## Unreleased
 
+## [0.3.15] - 2026-11-07
+
+### Changed
+
+- Pin the Pi SDK development dependencies to 1.5.0 and verify the Product Hunt extension against the actual Pi host.
+
 ## [0.3.14] - 2026-11-05
 
 ### Changed
