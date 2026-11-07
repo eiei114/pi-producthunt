@@ -1,11 +1,11 @@
-## Pi SDK 1.2.0 compatibility
+## Pi SDK 1.5.0 compatibility
 
 This package is verified against the frozen Pi SDK versions:
 
-- `@earendil-works/pi-agent-core`: `1.2.0`
-- `@earendil-works/pi-ai`: `1.2.0`
-- `@earendil-works/pi-coding-agent`: `1.2.0`
-- `@earendil-works/pi-tui`: `1.2.0`
+- `@earendil-works/pi-agent-core`: `1.5.0`
+- `@earendil-works/pi-ai`: `1.5.0`
+- `@earendil-works/pi-coding-agent`: `1.5.0`
+- `@earendil-works/pi-tui`: `1.5.0`
 
 These are exact development/test pins. Public peer dependency ranges remain
 `*`, preserving the package's existing install compatibility policy.
@@ -20,6 +20,16 @@ merged at `4b0554151161eae665aa2cdc845a2d7df40e4781`) documents Pi 1.2.0's
 This extension does not register that event, so no API migration is needed.
 The other startup/theme changes noted by the baseline do not affect this
 package's APIs.
+
+The [Pi 1.5.0 release notes](https://github.com/earendil-works/pi/releases/tag/v1.5.0)
+move tool argument validation to `@earendil-works/pi-schema`, so TypeBox
+features outside JSON Schema (`Type.Refine()`, `Type.BigInt()`,
+`Type.Undefined()`, codecs, `Format.Set()` formats) no longer apply to tool
+arguments. This package's tool schemas use only JSON Schema-compatible
+`Type.Object`, `Type.Optional`, `Type.String`, `Type.Integer` (with
+`minimum`/`maximum`), `Type.Boolean`, `Type.Enum`, and `StringEnum`, so no migration is
+needed. The 1.3.0 and 1.4.0 release notes list no breaking changes for the APIs
+used here.
 
 Run `npm run smoke:pi` to exercise the pinned CLI and the actual extension in
 an isolated Pi RPC process. `npm run ci` runs this harness. The committed

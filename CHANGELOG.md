@@ -11,6 +11,7 @@ This project follows semantic versioning.
 ### Changed
 
 - Pin the Pi SDK development dependencies to 1.5.0 and verify the Product Hunt extension against the actual Pi host.
+- Update the compatibility notes for Pi SDK 1.5.0, including the move of tool argument validation to `@earendil-works/pi-schema`.
 
 ## [0.3.14] - 2026-11-05
 

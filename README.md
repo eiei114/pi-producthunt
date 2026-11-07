@@ -223,7 +223,7 @@ npm run ci
 
 - TypeScript typecheck
 - Node tests
-- Actual Pi SDK 1.2.0 extension/RPC smoke checks
+- Actual Pi SDK 1.5.0 extension/RPC smoke checks
 - `npm pack --dry-run`
 
 ## Release
