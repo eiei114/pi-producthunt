@@ -107,6 +107,83 @@ test("searchPosts rejects a blank query without making a request", async () => {
   });
 });
 
+test("getPostComments maps post, comments, authors, replies, and pagination", async () => {
+  let request;
+
+  await withMockedFetch(async (_url, init) => {
+    request = JSON.parse(init.body);
+    return response({
+      data: {
+        post: {
+          id: "post-42",
+          slug: "calm-notes",
+          name: "Calm Notes",
+          comments: {
+            edges: [
+              {
+                node: {
+                  id: "comment-1",
+                  body: "The workflow is wonderfully simple.",
+                  votesCount: 7,
+                  createdAt: "2026-11-18T12:30:00Z",
+                  user: { id: "user-1", name: "Avery", username: "avery" },
+                  replies: { totalCount: 3 },
+                },
+              },
+            ],
+            pageInfo: { hasNextPage: true, endCursor: "cursor-next" },
+            totalCount: 12,
+          },
+        },
+      },
+    });
+  }, async () => {
+    const { getPostComments } = await import("../lib/client.ts");
+    const result = await getPostComments(
+      {
+        ref: "https://www.producthunt.com/posts/calm-notes",
+        limit: 4,
+        after: "cursor-current",
+      },
+      { token: "test-token" },
+    );
+
+    assert.deepEqual(result, {
+      post: { id: "post-42", slug: "calm-notes", name: "Calm Notes" },
+      comments: [
+        {
+          id: "comment-1",
+          body: "The workflow is wonderfully simple.",
+          votesCount: 7,
+          createdAt: "2026-11-18T12:30:00Z",
+          user: { id: "user-1", name: "Avery", username: "avery" },
+          repliesCount: 3,
+        },
+      ],
+      pageInfo: { hasNextPage: true, endCursor: "cursor-next" },
+      totalCount: 12,
+      rateLimit: { limit: undefined, remaining: undefined, reset: undefined },
+    });
+    assert.match(request.query, /query ProductHuntPostComments/);
+    assert.deepEqual(request.variables, {
+      postSlug: "calm-notes",
+      order: "NEWEST",
+      first: 4,
+      after: "cursor-current",
+    });
+  });
+});
+
+test("getPostComments reports a missing post", async () => {
+  await withMockedFetch(async () => response({ data: { post: null } }), async () => {
+    const { getPostComments } = await import("../lib/client.ts");
+
+    await assert.rejects(getPostComments({ ref: "missing-post" }, { token: "test-token" }), {
+      message: "Product Hunt post not found.",
+    });
+  });
+});
+
 test("researchTopic fetches comments in bounded batches without changing result order or fallbacks", async () => {
   const previousToken = process.env.PRODUCTHUNT_ACCESS_TOKEN;
   const previousFetch = globalThis.fetch;
