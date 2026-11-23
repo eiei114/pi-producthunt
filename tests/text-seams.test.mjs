@@ -24,8 +24,16 @@ test("truncateSingleLine collapses whitespace and adds ellipsis", () => {
 
 test("formatLaunchDate accepts ISO timestamps and rejects invalid values", () => {
   assert.equal(formatLaunchDate("2026-06-01T10:00:00Z"), "2026-06-01");
+  assert.equal(formatLaunchDate("2024-02-29T23:30:00-08:00"), "2024-02-29");
+  assert.equal(formatLaunchDate("2000-02-29"), "2000-02-29");
   assert.equal(formatLaunchDate("not-a-date"), null);
   assert.equal(formatLaunchDate(null), null);
+});
+
+test("formatLaunchDate rejects impossible calendar dates", () => {
+  for (const date of ["2026-00-01", "2026-13-01", "2026-01-00", "2026-01-32", "2026-04-31", "2026-02-29", "1900-02-29"]) {
+    assert.equal(formatLaunchDate(`${date}T10:00:00Z`), null, date);
+  }
 });
 
 test("formatLaunchTiming prefers featuredAt over createdAt", () => {
@@ -38,6 +46,17 @@ test("formatLaunchTiming prefers featuredAt over createdAt", () => {
     "Launched 2026-05-31",
   );
   assert.equal(formatLaunchTiming({ featuredAt: null, createdAt: null }), "Launch date unavailable");
+});
+
+test("formatLaunchTiming skips impossible launch dates", () => {
+  assert.equal(
+    formatLaunchTiming({ featuredAt: "2026-02-29T10:00:00Z", createdAt: "2026-02-28T09:00:00Z" }),
+    "Launched 2026-02-28",
+  );
+  assert.equal(
+    formatLaunchTiming({ featuredAt: "2026-02-29T10:00:00Z", createdAt: "2026-02-30T09:00:00Z" }),
+    "Launch date unavailable",
+  );
 });
 
 test("classifyCommentText prioritizes pricing over positive and question signals", () => {
