@@ -36,6 +36,63 @@ async function withMockedFetch(mockFetch, run) {
   }
 }
 
+test("getPosts sends the UTC bounds for a day-only request", async () => {
+  let request;
+
+  await withMockedFetch(async (_url, init) => {
+    request = JSON.parse(init.body);
+    return postsResponse([]);
+  }, async () => {
+    const { getPosts } = await import("../lib/client.ts");
+    await getPosts({ date: "2026-11-30" }, { token: "test-token" });
+
+    assert.match(request.query, /query ProductHuntPosts\b/);
+    assert.deepEqual(request.variables, {
+      postedAfter: "2026-11-30T00:00:00.000Z",
+      postedBefore: "2026-12-01T00:00:00.000Z",
+      order: "RANKING",
+      first: 10,
+    });
+  });
+});
+
+test("getPosts overrides one day bound and preserves pagination metadata", async () => {
+  let request;
+
+  await withMockedFetch(async (_url, init) => {
+    request = JSON.parse(init.body);
+    return response({
+      data: {
+        posts: {
+          edges: [{ node: post("sample-launch", { name: "Sample Launch" }) }],
+          pageInfo: { hasNextPage: true, endCursor: "cursor-next" },
+          totalCount: 23,
+        },
+      },
+    });
+  }, async () => {
+    const { getPosts } = await import("../lib/client.ts");
+    const result = await getPosts({
+      date: "2026-11-30",
+      postedAfter: "2026-11-30T12:00:00.000Z",
+      limit: 4,
+      after: "cursor-current",
+      featured: false,
+    }, { token: "test-token" });
+
+    assert.deepEqual(request.variables, {
+      postedAfter: "2026-11-30T12:00:00.000Z",
+      postedBefore: "2026-12-01T00:00:00.000Z",
+      order: "RANKING",
+      first: 4,
+      after: "cursor-current",
+      featured: false,
+    });
+    assert.deepEqual(result.pageInfo, { hasNextPage: true, endCursor: "cursor-next" });
+    assert.equal(result.totalCount, 23);
+  });
+});
+
 test("searchPosts matches names, taglines, and topic names case-insensitively", async () => {
   const posts = [
     post("name-match", { name: "AI Canvas", tagline: "Sketch faster" }),
