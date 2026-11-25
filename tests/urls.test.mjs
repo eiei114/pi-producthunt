@@ -31,7 +31,7 @@ test("stripUtmFromProductHuntUrl leaves clean Product Hunt URLs unchanged", () =
   assert.equal(stripUtmFromProductHuntUrl(input), input);
 });
 
-test("displayProductHuntUrl strips utm params and falls back to slug URL", () => {
+test("displayProductHuntUrl strips utm params", () => {
   assert.equal(
     displayProductHuntUrl(
       "https://www.producthunt.com/posts/ai-tool?utm_source=newsletter&utm_campaign=foo",
@@ -39,5 +39,19 @@ test("displayProductHuntUrl strips utm params and falls back to slug URL", () =>
     ),
     "https://www.producthunt.com/posts/ai-tool",
   );
-  assert.equal(displayProductHuntUrl(null, "ai-tool"), "https://www.producthunt.com/posts/ai-tool");
+});
+
+test("displayProductHuntUrl falls back to the slug URL for missing or blank links", () => {
+  for (const input of [null, undefined, "", " \t\n"]) {
+    assert.equal(
+      displayProductHuntUrl(input, "ai-tool"),
+      "https://www.producthunt.com/posts/ai-tool",
+      `input: ${JSON.stringify(input)}`,
+    );
+  }
+});
+
+test("displayProductHuntUrl preserves nonblank links that do not need cleanup", () => {
+  const input = " https://example.com/posts/ai-tool?utm_source=newsletter ";
+  assert.equal(displayProductHuntUrl(input, "ai-tool"), input);
 });

@@ -43,6 +43,12 @@ test("formatProductCard strips utm params from Product Hunt URLs", () => {
   assert.doesNotMatch(markdown, /utm_/);
 });
 
+test("formatProductCard uses the slug URL when the post URL is blank", () => {
+  const markdown = formatProductCard({ ...post, url: "" });
+
+  assert.match(markdown, /^- url: https:\/\/www\.producthunt\.com\/posts\/ai-tool$/m);
+});
+
 test("formatProductCards renders multiple cards with separators", () => {
   const markdown = formatProductCards({
     query: "AI coding agent",
