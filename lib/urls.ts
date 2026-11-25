@@ -25,6 +25,6 @@ export function stripUtmFromProductHuntUrl(input: string | null | undefined): st
 }
 
 export function displayProductHuntUrl(url: string | null | undefined, slug: string): string {
-  const cleaned = stripUtmFromProductHuntUrl(url);
-  return cleaned ?? `https://www.producthunt.com/posts/${slug}`;
+  if (url == null || url.trim() === "") return `https://www.producthunt.com/posts/${slug}`;
+  return stripUtmFromProductHuntUrl(url) ?? url;
 }
