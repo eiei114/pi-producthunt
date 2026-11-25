@@ -18,5 +18,12 @@ export function stripHtml(text: string): string {
 export function truncateSingleLine(text: string, maxChars: number): string {
   const singleLine = text.replace(/\s+/g, " ").trim();
   if (singleLine.length <= maxChars) return singleLine;
-  return `${singleLine.slice(0, maxChars - 1)}…`;
+  let prefix = singleLine.slice(0, maxChars - 1);
+  const before = prefix.charCodeAt(prefix.length - 1);
+  const after = singleLine.charCodeAt(prefix.length);
+  // Move the cutoff before the pair if it falls between its UTF-16 code units.
+  if (before >= 0xd800 && before <= 0xdbff && after >= 0xdc00 && after <= 0xdfff) {
+    prefix = prefix.slice(0, -1);
+  }
+  return `${prefix}…`;
 }

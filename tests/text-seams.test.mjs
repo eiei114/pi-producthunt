@@ -22,6 +22,22 @@ test("truncateSingleLine collapses whitespace and adds ellipsis", () => {
   assert.equal(truncateSingleLine("abcdefghijklmnopqrstuvwxyz", 10), "abcdefghi…");
 });
 
+test("truncateSingleLine backs off when the cutoff splits an emoji", () => {
+  const maxChars = 3;
+  const result = truncateSingleLine("A🚀BC", maxChars);
+  assert.equal(result.isWellFormed(), true);
+  assert.equal(result, "A…");
+  assert.ok(result.length <= maxChars);
+});
+
+test("truncateSingleLine keeps an emoji that fits before the ellipsis", () => {
+  const maxChars = 4;
+  const result = truncateSingleLine("A🚀BC", maxChars);
+  assert.equal(result.isWellFormed(), true);
+  assert.equal(result, "A🚀…");
+  assert.equal(result.length, maxChars);
+});
+
 test("formatLaunchDate accepts ISO timestamps and rejects invalid values", () => {
   assert.equal(formatLaunchDate("2026-06-01T10:00:00Z"), "2026-06-01");
   assert.equal(formatLaunchDate("2024-02-29T23:30:00-08:00"), "2024-02-29");
